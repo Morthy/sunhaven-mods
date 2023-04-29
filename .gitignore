@@ -1,0 +1,8 @@
+﻿.idea
+private.targets
+lib
+lib2
+*.DotSettings.user
+*/bin
+*/obj
+*/NuGet.Config
