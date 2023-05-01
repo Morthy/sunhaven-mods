@@ -32,6 +32,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Exporter", "Exporter\Export
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SaveBackups", "SaveBackups\SaveBackups.csproj", "{CBF6C965-AEA7-47D4-A180-6973602DBEC9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DecorateAnywhere", "DecorateAnywhere\DecorateAnywhere.csproj", "{3C6061A5-17F7-4008-84B9-75FB72BC526B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -102,5 +104,9 @@ Global
 		{CBF6C965-AEA7-47D4-A180-6973602DBEC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CBF6C965-AEA7-47D4-A180-6973602DBEC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CBF6C965-AEA7-47D4-A180-6973602DBEC9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C6061A5-17F7-4008-84B9-75FB72BC526B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C6061A5-17F7-4008-84B9-75FB72BC526B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C6061A5-17F7-4008-84B9-75FB72BC526B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C6061A5-17F7-4008-84B9-75FB72BC526B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
