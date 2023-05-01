@@ -475,6 +475,7 @@ namespace MuseumTracker
                 }
                 
                 SingletonBehaviour<GameSave>.Instance.SetProgressBoolWorld(GetProgressKey(bundle.bundleType, bundle.progressTokenWhenFull.progressID, slotItemData.slot.itemToAccept.id), slotItemData.amount >= slotItemData.slot.numberOfItemToAccept);
+                SingletonBehaviour<GameSave>.Instance.SetProgressStringWorld(GetProgressKey(bundle.bundleType, bundle.progressTokenWhenFull.progressID, slotItemData.slot.itemToAccept.id) + "_string", slotItemData.amount.ToString() + "/" + slotItemData.slot.numberOfItemToAccept.ToString());
             }
             //logger.LogInfo(debug);
         }
@@ -488,12 +489,14 @@ namespace MuseumTracker
                 {
                     if (MuseumRequirements.TryGetValue(__instance.id, out string where) && !SingletonBehaviour<GameSave>.Instance.GetProgressBoolWorld(GetProgressKey(BundleType.MuseumBundle, where, __instance.id)))
                     {
-                        __result = __result + "\n<color=#ed77f8><size=65%>Required: " + BundleNames[where] + "</size></color>";
+                        string amounts = SingletonBehaviour<GameSave>.Instance.GetProgressStringWorld(GetProgressKey(BundleType.MuseumBundle, where, __instance.id) + "_string");
+                        __result = __result + "\n<color=#ed77f8><size=65%>Required: " + BundleNames[where] + " ("+ amounts + ")</size></color>";
                     }
                     
                     if (AltarRequirements.TryGetValue(__instance.id, out string where2) && !SingletonBehaviour<GameSave>.Instance.GetProgressBoolWorld(GetProgressKey(BundleType.DynusAltar, where2, __instance.id)))
                     {
-                        __result = __result + "\n<color=#ed77f8><size=65%>Required: " + BundleNames[where2] + "</size></color>";
+                        string amounts = SingletonBehaviour<GameSave>.Instance.GetProgressStringWorld(GetProgressKey(BundleType.DynusAltar, where2, __instance.id) + "_string");
+                        __result = __result + "\n<color=#ed77f8><size=65%>Required: " + BundleNames[where2] + " (" + amounts + ")</size></color>";
                     }                   
                 }
                 catch (Exception e)
