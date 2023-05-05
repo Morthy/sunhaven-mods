@@ -19,7 +19,6 @@ namespace DecorateAnywhere
             
             harmony.Patch(typeof(GameManager).GetMethods().First(
                     m => m.Name.Equals("InvalidDecorationPlacement") &&  m.GetParameters().Length == 8), 
-                null, 
                 new HarmonyMethod(typeof(Patches).GetMethod("GameManagerInvalidDecorationPlacement"))
             );
             
