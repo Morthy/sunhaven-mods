@@ -29,9 +29,16 @@ namespace DecorateAnywhere
         [HarmonyPatch]
         class Patches
         {
-            public static void GameManagerInvalidDecorationPlacement(ref bool canBePlaced)
+            public static bool GameManagerInvalidDecorationPlacement(ref bool canBePlaced, ref Decoration decoration)
             {
+                if (Player.Instance.pause || decoration is Crop)
+                {
+                    return true;
+                }
+                
                 canBePlaced = true; // :)
+
+                return false;
             }
         }
         
