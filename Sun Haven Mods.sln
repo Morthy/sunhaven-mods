@@ -34,6 +34,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SaveBackups", "SaveBackups\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DecorateAnywhere", "DecorateAnywhere\DecorateAnywhere.csproj", "{3C6061A5-17F7-4008-84B9-75FB72BC526B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoveSkillcap", "RemoveSkillcap\RemoveSkillcap.csproj", "{F73B620D-6DB3-46ED-B920-06779A3D7886}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shrek", "Shrek\Shrek.csproj", "{FCC59E79-0617-4F6B-806A-970D722A5866}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -108,5 +112,13 @@ Global
 		{3C6061A5-17F7-4008-84B9-75FB72BC526B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C6061A5-17F7-4008-84B9-75FB72BC526B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C6061A5-17F7-4008-84B9-75FB72BC526B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F73B620D-6DB3-46ED-B920-06779A3D7886}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F73B620D-6DB3-46ED-B920-06779A3D7886}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F73B620D-6DB3-46ED-B920-06779A3D7886}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F73B620D-6DB3-46ED-B920-06779A3D7886}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCC59E79-0617-4F6B-806A-970D722A5866}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCC59E79-0617-4F6B-806A-970D722A5866}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCC59E79-0617-4F6B-806A-970D722A5866}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCC59E79-0617-4F6B-806A-970D722A5866}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
