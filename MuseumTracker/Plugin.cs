@@ -13,427 +13,569 @@ namespace MuseumTracker
         private Harmony harmony = new Harmony(PluginInfo.PLUGIN_GUID);
         public static ManualLogSource logger;
 
-        public static Dictionary<string, string> BundleNames = new()
+        private static readonly Dictionary<int, string> BundleNames = new()
         {
-            { "BarsBundle", "Bars Bundle (Hall of Gems)"},
-            { "GoldenBundle", "Golden Bundle (Hall of Gems)"},
-            { "GemBundle", "Gem Bundle (Hall of Gems)"},
-            { "NelvariMinesBundle", "Nel'vari Mines Bundle (Hall of Gems)"},
-            { "WithergateMinesBundle", "Withergate Mines Bundle (Hall of Gems)"},
-            { "ManaBundle", "Mana Bundle (Hall of Gems)"},
+            { ItemID.GoldenBundle, "Golden Bundle (Hall of Gems)" },
+            { ItemID.Gembundle, "Gem Bundle (Hall of Gems)" },
+            { ItemID.Manabundle, "Mana Bundle (Hall of Gems)" },
+            { ItemID.BarsBundle, "Bars Bundle (Hall of Gems)" },
+            { ItemID.NelvariMinesBundle, "Nel'vari Mines Bundle (Hall of Gems)" },
+            { ItemID.WithergateMinesBundle, "Withergate Mines Bundle (Hall of Gems)" },
+            { ItemID.WinterCropsBundle, "Winter Crops Bundle (Hall of Culture)"},
+            { ItemID.FlowersBundle, "Flowers Bundle (Hall of Culture)"},
+            { ItemID.SpringCropsBundle, "Spring Crops Bundle (Hall of Culture)"},
+            { ItemID.FallCropsBundle, "Fall Crops Bundle (Hall of Culture)"},
+            { ItemID.NelvariTempleBooksBundle, "Nel'vari Temple Bundle (Hall of Culture)"},
+            { ItemID.SummerCropsBundle, "Summer Crops Bundle (Hall of Culture)"},
+            { ItemID.ForagingBundle, "Foraging Bundle (Hall of Culture)"},
+            { ItemID.CombatBundle, "Combat Bundle (Hall of Culture)"},
+            { ItemID.AlchemyBundle, "Alchemy Bundle (Hall of Culture)"},
+            { ItemID.ExplorationBundle, "Exploration Bundle (Hall of Culture)"},
+            { ItemID.WithergateFarmingBundle, "Withergate Farming Bundle (Hall of Culture)"},
+            { ItemID.NelvariFarmingBundle, "Nel'vari Farming Bundle (Hall of Culture)"},
             
-            { "WinterCropsBundle", "Winter Crops Bundle (Hall of Culture)"},
-            { "FlowersBundle", "Flowers Bundle (Hall of Culture)"},
-            { "SpringCropsBundle", "Spring Crops Bundle (Hall of Culture)"},
-            { "FallCropsBundle", "Fall Crops Bundle (Hall of Culture)"},
-            { "NelvariTempleBooks", "Nel'vari Temple Bundle (Hall of Culture)"},
-            { "SummerCropsBundle", "Summer Crops Bundle (Hall of Culture)"},
-            { "ForagingBundle", "Foraging Bundle (Hall of Culture)"},
-            { "CombatBundle", "Combat Bundle (Hall of Culture)"},
-            { "AlchemyBundle", "Alchemy Bundle (Hall of Culture)"},
-            { "ExplorationBundle", "Exploration Bundle (Hall of Culture)"},
-            { "WithergateFarmingBundle", "Withergate Farming Bundle (Hall of Culture)"},
-            { "NelvariFarmingBundle", "Nel'vari Farming Bundle (Hall of Culture)"},
+            { ItemID.BundleAquariumSpring, "Spring Fish Tank (The Aquarium)"},
+            { ItemID.BundleAquariumSummer, "Summer Fish Tank (The Aquarium)"},
+            { ItemID.BundleAquariumFall, "Fall Fish Tank (The Aquarium)"},
+            { ItemID.BundleAquariumWinter, "Winter Fish Tank (The Aquarium)"},
+            { ItemID.BundleAquariumNelvari, "Nel'vari Fish Tank (The Aquarium)"},
+            { ItemID.BundleAquariumWithergate, "Withergate Fish Tank (The Aquarium)"},
+            { ItemID.BundleAquariumBigtank, "Large Tank (The Aquarium)"},
+            { ItemID.FishingBundle, "Fishing Bundle (The Aquarium)"},
             
-            { "MuseumAquariumSpring", "Spring Fish Tank (The Aquarium)"},
-            { "MuseumAquariumSummer", "Summer Fish Tank (The Aquarium)"},
-            { "MuseumAquariumFall", "Fall Fish Tank (The Aquarium)"},
-            { "MuseumAquariumWinter", "Winter Fish Tank (The Aquarium)"},
-            { "MuseumAquariumNelvari", "Nel'vari Fish Tank (The Aquarium)"},
-            { "MuseumAquariumWithergate", "Withergate Fish Tank (The Aquarium)"},
-            { "MuseumAquariumBigTank", "Large Tank (The Aquarium)"},
-            { "FishingBundle", "Spring Bundle (The Aquarium)"},
-            
-            { "DynusAltarMining", "Mining Dynus Altar"},
-            { "DynusAltarFishing", "Fishing Dynus Altar"},
-            { "DynusAltarForaging", "Foraging Dynus Altar"},
-            { "DynusAltarCooking", "Cooking Dynus Altar"},
-            { "DynusAltarGold", "Gold Dynus Altar"},
-            { "DynusAltarFarming", "Farming Dynus Altar"},
-            { "DynusAltarFruit", "Fruit Dynus Altar"},
-            { "DynusAltarRareItems", "Keepsake Dynus Altar"},
-            
+            { ItemID.DynusAltarMining0, "Mining Dynus Altar"},
+            { ItemID.DynusAltarFishing0, "Fishing Dynus Altar"},
+            { ItemID.DynusAltarForaging0, "Foraging Dynus Altar"},
+            { ItemID.DynusAltarMiscenalleous0, "Cooking Dynus Altar"},
+            { ItemID.DynusAltarGold0, "Gold Dynus Altar"},
+            { ItemID.DynusAltarFarming0, "Farming Dynus Altar"},
+            { ItemID.DynusAltarFruit0, "Fruit Dynus Altar"},
+            { ItemID.DynusAltarRareitems, "Keepsake Dynus Altar"},
         };
 
-        public static Dictionary<int, string[]> MuseumRequirements = new()
+        private static readonly int[] ScenesToCheck = { 315, 324, 314, 140 };
+
+        private static readonly Dictionary<int, Dictionary<int, int>> Bundles = new()
         {
-            {ItemID.Butterflyfish, new []{ "MuseumAquariumSpring"}},
-            {ItemID.Sunfish, new []{"MuseumAquariumSpring"}},
-            {ItemID.FlowerFlounder, new []{"MuseumAquariumSpring"}},
-            {ItemID.RaincloudRay, new []{"MuseumAquariumSpring"}},
-            {ItemID.FloralTrout, new []{"MuseumAquariumSpring"}},
-            {ItemID.NeonTetra, new []{"MuseumAquariumSpring"}},
-            {ItemID.Seahorse, new []{"MuseumAquariumSpring"}},
-            {ItemID.PaintedEgg, new []{"MuseumAquariumSpring"}},
-            {ItemID.Tadpole, new []{"MuseumAquariumSpring"}},
 
-            {ItemID.Blazeel, new []{"MuseumAquariumSummer"}},
-            {ItemID.HearthAngler, new []{"MuseumAquariumSummer"}},
-            {ItemID.ScorchingSquid, new []{"MuseumAquariumSummer"}},
-            {ItemID.MagmaStar, new []{"MuseumAquariumSummer"}},
-            {ItemID.TinderTurtle, new []{"MuseumAquariumSummer"}},
-            {ItemID.Pyrelus, new []{"MuseumAquariumSummer"}},
-            {ItemID.FlameRay, new []{"MuseumAquariumSummer"}},
-            {ItemID.MoltenSlug, new []{"MuseumAquariumSummer"}},
-            {ItemID.Searback, new []{"MuseumAquariumSummer"}},
+            {
+                ItemID.GoldenBundle, new Dictionary<int, int>()
+                {
+                    { ItemID.GoldenMilk, 1 },
+                    { ItemID.GoldenEgg, 1 },
+                    { ItemID.GoldenWool, 1 },
+                    { ItemID.GoldenPomegranate, 1 },
+                    { ItemID.GoldenLog, 1 },
+                    { ItemID.GoldenFeather, 1 },
+                    { ItemID.GoldenSilk, 1 },
+                    { ItemID.GoldenApple, 1 },
+                    { ItemID.GoldenOrange, 1 },
+                    { ItemID.GoldenStrawberry, 1 },
+                    { ItemID.GoldenBlueberry, 1 },
+                    { ItemID.GoldenPeach, 1 },
+                    { ItemID.GoldenRaspberry, 1 },
+                }
+            },
+            {
+                ItemID.Gembundle, new Dictionary<int, int>()
+                {
+                    { ItemID.Sapphire, 1 },
+                    { ItemID.Ruby, 1 },
+                    { ItemID.Amethyst, 1 },
+                    { ItemID.Diamond, 1 },
+                    { ItemID.Havenite, 1 },
+                    { ItemID.Dizzite, 1 },
+                    { ItemID.BlackDiamond, 1 },
+                }
+            },
+            {
+                ItemID.Manabundle, new Dictionary<int, int>()
+                {
+                    { ItemID.ManaDrop, 20 },
+                }
+            },
+            {
+                ItemID.BarsBundle, new Dictionary<int, int>()
+                {
+                    { ItemID.CopperBar, 1 },
+                    { ItemID.IronBar, 1 },
+                    { ItemID.GoldBar, 1 },
+                    { ItemID.AdamantBar, 1 },
+                    { ItemID.MithrilBar, 1 },
+                    { ItemID.SuniteBar, 1 },
+                    { ItemID.ElvenSteelBar, 1 },
+                    { ItemID.GloriteBar, 1 },
+                }
+            },
+            {
+                ItemID.NelvariMinesBundle, new Dictionary<int, int>()
+                {
+                    { ItemID.ManaShard, 5 },
+                    { ItemID.SparklingDragonScale, 5 },
+                    { ItemID.SharpDragonScale, 5 },
+                    { ItemID.ToughDragonScale, 5 },
+                }
+            },
+            {
+                ItemID.WithergateMinesBundle, new Dictionary<int, int>()
+                {
+                    { ItemID.CandyCornPieces, 5 },
+                    { ItemID.RockCandyGem, 5 },
+                    { ItemID.JawbreakerGem, 5 },
+                    { ItemID.HardButterscotchGem, 5 },
+                }
+            },
+            {
+                ItemID.WinterCropsBundle, new Dictionary<int, int>()
+                {
+                    { ItemID.TeaLeaves, 1 },
+                    { ItemID.Turnip, 1 },
+                    { ItemID.PurpleEggplant, 1 },
+                    { ItemID.HeatFruit, 1 },
+                    { ItemID.MarshmallowBean, 1 },
+                    { ItemID.BrrNana, 1 },
+                    { ItemID.StarFruit, 1 },
+                    { ItemID.HexagonBerry, 1 },
+                    { ItemID.SnowPea, 1 },
+                    { ItemID.SnowBallCrop, 1 },
+                    { ItemID.BlizzardBerry, 1 },
+                    { ItemID.BalloonFruit, 1 },
+                    { ItemID.PythagoreanBerry, 1 },
+                    { ItemID.BlueMoonFruit, 1 },
+                    { ItemID.CandyCane, 1 },
+                }
+            },
+            {
+                ItemID.FlowersBundle, new Dictionary<int, int>()
+                {
+                    { ItemID.HoneyFlower, 1 },
+                    { ItemID.RedRose, 1 },
+                    { ItemID.BlueRose, 1 },
+                    { ItemID.Daisy, 1 },
+                    { ItemID.Orchid, 1 },
+                    { ItemID.Tulip, 1 },
+                    { ItemID.Hibiscus, 1 },
+                    { ItemID.Lavender, 1 },
+                    { ItemID.Sunflower, 1 },
+                    { ItemID.Lily, 1 },
+                    { ItemID.Lotus, 1 },
+                }
+            },
+            {
+                ItemID.SpringCropsBundle, new Dictionary<int, int>()
+                {
+                    { ItemID.Grapes, 1 },
+                    { ItemID.Wheat, 1 },
+                    { ItemID.Tomato, 1 },
+                    { ItemID.Corn, 1 },
+                    { ItemID.Onion, 1 },
+                    { ItemID.Potato, 1 },
+                    { ItemID.Greenroot, 1 },
+                    { ItemID.Carrot, 1 },
+                    { ItemID.Kale, 1 },
+                    { ItemID.Lettuce, 1 },
+                    { ItemID.Cinnaberry, 1 },
+                    { ItemID.Pepper, 1 },
+                    { ItemID.Shimmeroot, 1 },
+                }
+            },
+            {
+                ItemID.FallCropsBundle, new Dictionary<int, int>()
+                {
+                    { ItemID.Garlic, 1 },
+                    { ItemID.Yam, 1 },
+                    { ItemID.SodaPopCrop, 1 },
+                    { ItemID.FizzyFruit, 1 },
+                    { ItemID.Cranberry, 1 },
+                    { ItemID.Barley, 1 },
+                    { ItemID.Pumpkin, 1 },
+                    { ItemID.GhostPepper, 1 },
+                    { ItemID.Butternut, 1 },
+                }
+            },
+            {
+                ItemID.NelvariTempleBooksBundle, new Dictionary<int, int>()
+                {
+                    { ItemID.OriginsoftheGrandTreeandNivaraBookI, 1 },
+                    { ItemID.OriginsoftheGrandTreeandNivaraBookII, 1 },
+                    { ItemID.OriginsoftheGrandTreeandNivaraBookIII, 1 },
+                    { ItemID.OriginsoftheGrandTreeandNivaraBookIV, 1 },
+                    { ItemID.OriginsoftheGrandTreeandNivaraBookV, 1 },
+                    { ItemID.OriginsofSunHavenandEliosBookI, 1 },
+                    { ItemID.OriginsofSunHavenandEliosBookII, 1 },
+                    { ItemID.OriginsofSunHavenandEliosBookIII, 1 },
+                    { ItemID.OriginsofSunHavenandEliosBookIV, 1 },
+                    { ItemID.OriginsofSunHavenandEliosBookV, 1 },
+                    { ItemID.OriginsofDynusandShadowsBookI, 1 },
+                    { ItemID.OriginsofDynusandShadowsBookII, 1 },
+                    { ItemID.OriginsofDynusandShadowsBookIII, 1 },
+                    { ItemID.OriginsofDynusandShadowsBookIV, 1 },
+                    { ItemID.OriginsofDynusandShadowsBookV, 1 },
+                }
+            },
+            {
+                ItemID.SummerCropsBundle, new Dictionary<int, int>()
+                {
+                    { ItemID.Armoranth, 1 },
+                    { ItemID.GuavaBerry, 1 },
+                    { ItemID.Beet, 1 },
+                    { ItemID.Lemon, 1 },
+                    { ItemID.Chocoberry, 1 },
+                    { ItemID.Pineapple, 1 },
+                    { ItemID.Pepper, 1 },
+                    { ItemID.Melon, 1 },
+                    { ItemID.Stormelon, 1 },
+                    { ItemID.Durian, 1 },
+                }
+            },
+            {
+                ItemID.ForagingBundle, new Dictionary<int, int>()
+                {
+                    { ItemID.Log, 1 },
+                    { ItemID.Apple, 1 },
+                    { ItemID.Seaweed, 1 },
+                    { ItemID.Blueberry, 1 },
+                    { ItemID.Mushroom, 1 },
+                    { ItemID.Orange, 1 },
+                    { ItemID.Strawberry, 1 },
+                    { ItemID.Berry, 1 },
+                    { ItemID.Raspberry, 1 },
+                    { ItemID.Peach, 1 },
+                    { ItemID.SandDollar, 1 },
+                    { ItemID.Starfish, 1 },
+                }
+            },
+            {
+                ItemID.CombatBundle, new Dictionary<int, int>()
+                {
+                    { ItemID.LeafieTrinket, 1 },
+                    { ItemID.EliteLeafieTrinket, 1 },
+                    { ItemID.CentipillarTrinket, 1 },
+                    { ItemID.PeppinchGreenTrinket, 1 },
+                    { ItemID.ScorpepperTrinket, 1 },
+                    { ItemID.EliteScorpepperTrinket, 1 },
+                    { ItemID.HatCrabTrinket, 1 },
+                    { ItemID.FloatyCrabTrinket, 1 },
+                    { ItemID.BucketCrabTrinket, 1 },
+                    { ItemID.UmbrellaCrabTrinket, 1 },
+                    { ItemID.ChimchuckTrinket, 1 },
+                    { ItemID.AncientSunHavenSword, 1 },
+                    { ItemID.AncientNelVarianSword, 1 },
+                    { ItemID.AncientWithergateSword, 1 },
 
-            {ItemID.Coducopia, new []{"MuseumAquariumFall"}},
-            {ItemID.KingSalmon, new []{"MuseumAquariumFall"}},
-            {ItemID.Hayfish, new []{"MuseumAquariumFall"}},
-            {ItemID.AcornAnchovy, new []{"MuseumAquariumFall"}},
-            {ItemID.VampirePiranha, new []{"MuseumAquariumFall"}},
-            {ItemID.Ghostfish, new []{"MuseumAquariumFall"}},
-            {ItemID.PumpkinJelly, new []{"MuseumAquariumFall"}},
-            {ItemID.PiratePerch, new []{"MuseumAquariumFall"}},
-            {ItemID.AutumnLeafSole, new []{"MuseumAquariumFall"}},
+                }
+            },
+            {
+                ItemID.AlchemyBundle, new Dictionary<int, int>()
+                {
+                    { ItemID.ManaPotion, 1 },
+                    { ItemID.HealthPotion, 1 },
+                    { ItemID.AttackPotion, 1 },
+                    { ItemID.SpeedPotion, 1 },
+                    { ItemID.DefensePotion, 1 },
+                    { ItemID.AdvancedAttackPotion, 1 },
+                    { ItemID.AdvancedDefensePotion, 1 },
+                    { ItemID.AdvancedSpellDamagePotion, 1 },
+                    { ItemID.IncredibleSpellDamagePotion, 1 },
+                    { ItemID.IncredibleAttackPotion, 1 },
+                    { ItemID.IncredibleDefensePotion, 1 },
+                }
+            },
+            {
+                ItemID.ExplorationBundle, new Dictionary<int, int>()
+                {
+                    { ItemID.PetrifiedLog, 1 },
+                    { ItemID.PhoenixFeather, 1 },
+                    { ItemID.FairyWings, 1 },
+                    { ItemID.GriffonEgg, 1 },
+                    { ItemID.ManaSap, 1 },
+                    { ItemID.PumiceStone, 1 },
+                    { ItemID.MysteriousAntler, 1 },
+                    { ItemID.DragonFang, 1 },
+                    { ItemID.MonsterCandy, 1 },
+                    { ItemID.UnicornHairTuft, 1 },
+                }
+            },
+            {
+                ItemID.WithergateFarmingBundle, new Dictionary<int, int>()
+                {
 
-            {ItemID.Frostfin, new []{"MuseumAquariumWinter"}},
-            {ItemID.ChristmasLightfish, new []{"MuseumAquariumWinter"}},
-            {ItemID.HollyCarp, new []{"MuseumAquariumWinter"}},
-            {ItemID.JingleBass, new []{"MuseumAquariumWinter"}},
-            {ItemID.FrozenTuna, new []{"MuseumAquariumWinter"}},
-            {ItemID.Scarffish, new []{"MuseumAquariumWinter"}},
-            {ItemID.Heatfin, new []{"MuseumAquariumWinter"}},
-            {ItemID.IcicleCarp, new []{"MuseumAquariumWinter"}},
-            {ItemID.BlazingHerring, new []{"MuseumAquariumWinter"}},
-
-            {ItemID.RobedParrotfish, new []{"MuseumAquariumNelvari"}},
-            {ItemID.Axolotl, new []{"MuseumAquariumNelvari"}},
-            {ItemID.FrilledBetta, new []{"MuseumAquariumNelvari"}},
-            {ItemID.Horsefish, new []{"MuseumAquariumNelvari"}},
-            {ItemID.Flamefish, new []{"MuseumAquariumNelvari"}},
-            {ItemID.DragonGulper, new []{"MuseumAquariumNelvari"}},
-            {ItemID.NeapolitanFish, new []{"MuseumAquariumNelvari"}},
-            {ItemID.Snobfish, new []{"MuseumAquariumNelvari"}},
-            {ItemID.KelpEel, new []{"MuseumAquariumNelvari"}},
-            {ItemID.PrincelyFrog, new []{"MuseumAquariumNelvari"}},
-            {ItemID.Angelfin, new []{"MuseumAquariumNelvari"}},
-            {ItemID.Bubblefish, new []{"MuseumAquariumNelvari"}},
-            {ItemID.CrystalTetra, new []{"MuseumAquariumNelvari"}},
-            {ItemID.SkyRay, new []{"MuseumAquariumNelvari"}},
-
-            {ItemID.Kraken, new []{"MuseumAquariumWithergate"}},
-            {ItemID.WaterBear, new []{"MuseumAquariumWithergate"}},
-            {ItemID.BonemouthBass, new []{"MuseumAquariumWithergate"}},
-            {ItemID.MummyTrout, new []{"MuseumAquariumWithergate"}},
-            {ItemID.DeadeyeShrimp, new []{"MuseumAquariumWithergate"}},
-            {ItemID.ElectricEel, new []{"MuseumAquariumWithergate"}},
-            {ItemID.BrainJelly, new []{"MuseumAquariumWithergate"}},
-            {ItemID.RedfinnedPincher, new []{"MuseumAquariumWithergate"}},
-            {ItemID.SeaBat, new []{"MuseumAquariumWithergate"}},
-            {ItemID.GhostheadTuna, new []{"MuseumAquariumWithergate"}},
-            {ItemID.Globfish, new []{"MuseumAquariumWithergate"}},
-            {ItemID.LivingJelly, new []{"MuseumAquariumWithergate"}},
-            {ItemID.Purrmaid, new []{"MuseumAquariumWithergate"}},
-            {ItemID.SlimeLeech, new []{"MuseumAquariumWithergate"}},
-            {ItemID.GoblinShark, new []{"MuseumAquariumWithergate"}},
-            {ItemID.Moonfish, new []{"MuseumAquariumWithergate"}},
-            {ItemID.ToothyAngler, new []{"MuseumAquariumWithergate"}},
-            {ItemID.VampireSquid, new []{"MuseumAquariumWithergate"}},
-            {ItemID.Viperfish, new []{"MuseumAquariumWithergate"}},
-            {ItemID.AlbinoSquid, new []{"MuseumAquariumWithergate"}},
-            {ItemID.Devilfin, new []{"MuseumAquariumWithergate"}},
-            {ItemID.ShadowTuna, new []{"MuseumAquariumWithergate"}},
-
-            {ItemID.PygmyTuna, new []{"MuseumAquariumBigTank"}},
-            {ItemID.Catfish, new []{"MuseumAquariumBigTank"}},
-            {ItemID.GoldFish, new []{"MuseumAquariumBigTank"}},
-            {ItemID.StreamlineCod, new []{"MuseumAquariumBigTank"}},
-            {ItemID.Salmon, new []{"MuseumAquariumBigTank"}},
-            {ItemID.ClownFish, new []{"MuseumAquariumBigTank"}},
-            {ItemID.BlackBass, new []{"MuseumAquariumBigTank"}},
-            {ItemID.RainbowTrout, new []{"MuseumAquariumBigTank"}},
-            {ItemID.PopeyeGoldfish, new []{"MuseumAquariumBigTank"}},
-            {ItemID.Pufferfish, new []{"MuseumAquariumBigTank"}},
-            {ItemID.IronheadSturgeon, new []{"MuseumAquariumBigTank"}},
-            {ItemID.Cuddlefish, new []{"MuseumAquariumBigTank"}},
-            {ItemID.Lobster, new []{"MuseumAquariumBigTank"}},
-            {ItemID.SilverCarp, new []{"MuseumAquariumBigTank"}},
-            {ItemID.Tuna, new []{"MuseumAquariumBigTank"}},
-            {ItemID.BluntedSwordfish, new []{"MuseumAquariumBigTank"}},
-            {ItemID.RibbonEel, new []{"MuseumAquariumBigTank"}},
-            {ItemID.TigerTrout, new []{"MuseumAquariumBigTank"}},
-            {ItemID.Eel, new []{"MuseumAquariumBigTank"}},
-            {ItemID.RedSnapper, new []{"MuseumAquariumBigTank"}},
-            {ItemID.Carp, new []{"MuseumAquariumBigTank"}},
-            {ItemID.RedeyePiranha, new []{"MuseumAquariumBigTank"}},
-            {ItemID.AngelFish, new []{"MuseumAquariumBigTank"}},
-            {ItemID.WhitebellyShark, new []{"MuseumAquariumBigTank"}},
-            {ItemID.KoiFish, new []{"MuseumAquariumBigTank"}},
-            {ItemID.SandstoneFish, new []{"MuseumAquariumBigTank"}},
-
-            {ItemID.HandmadeBobber, new []{"FishingBundle"}},
-            {ItemID.AncientMagicStaff, new []{"FishingBundle"}},
-            {ItemID.BronzeDragonRelic, new []{"FishingBundle"}},
-            {ItemID.OldSwordHilt, new []{"FishingBundle"}},
-            {ItemID.NelVarianRunestone, new []{"FishingBundle"}},
-            {ItemID.AncientElvenHeaddress, new []{"FishingBundle"}},
-            {ItemID.OldMayoralPainting, new []{"FishingBundle"}},
-            {ItemID.TentacleMonsterEmblem, new []{"FishingBundle"}},
-            {ItemID.AncientAngelQuill, new []{"FishingBundle"}},
-            {ItemID.AncientNagaCrook, new []{"FishingBundle"}},
-            {ItemID.AncientAmariTotem, new []{"FishingBundle"}},
-
-            {ItemID.GoldenMilk, new []{"GoldenBundle"}},
-            {ItemID.GoldenEgg, new []{"GoldenBundle"}},
-            {ItemID.GoldenWool, new []{"GoldenBundle"}},
-            {ItemID.GoldenPomegranate, new []{"GoldenBundle"}},
-            {ItemID.GoldenLog, new []{"GoldenBundle"}},
-            {ItemID.GoldenFeather, new []{"GoldenBundle"}},
-            {ItemID.GoldenSilk, new []{"GoldenBundle"}},
-            {ItemID.GoldenApple, new []{"GoldenBundle"}},
-            {ItemID.GoldenOrange, new []{"GoldenBundle"}},
-            {ItemID.GoldenStrawberry, new []{"GoldenBundle"}},
-            {ItemID.GoldenBlueberry, new []{"GoldenBundle"}},
-            {ItemID.GoldenPeach, new []{"GoldenBundle"}},
-            {ItemID.GoldenRaspberry, new []{"GoldenBundle"}},
-
-            {ItemID.Sapphire, new []{"GemBundle"}},
-            {ItemID.Ruby, new []{"GemBundle"}},
-            {ItemID.Amethyst, new []{"GemBundle"}},
-            {ItemID.Diamond, new []{"GemBundle"}},
-            {ItemID.Havenite, new []{"GemBundle"}},
-            {ItemID.Dizzite, new []{"GemBundle"}},
-            {ItemID.BlackDiamond, new []{"GemBundle"}},
-
-            {ItemID.ManaDrop, new []{"ManaBundle"}},
-
-            {ItemID.CopperBar, new []{"BarsBundle"}},
-            {ItemID.IronBar, new []{"BarsBundle"}},
-            {ItemID.GoldBar, new []{"BarsBundle"}},
-            {ItemID.AdamantBar, new []{"BarsBundle"}},
-            {ItemID.MithrilBar, new []{"BarsBundle"}},
-            {ItemID.SuniteBar, new []{"BarsBundle"}},
-            {ItemID.ElvenSteelBar, new []{"BarsBundle"}},
-            {ItemID.GloriteBar, new []{"BarsBundle"}},
-
-            {ItemID.ManaShard, new []{"NelvariMinesBundle"}},
-            {ItemID.SparklingDragonScale, new []{"NelvariMinesBundle"}},
-            {ItemID.SharpDragonScale, new []{"NelvariMinesBundle"}},
-            {ItemID.ToughDragonScale, new []{"NelvariMinesBundle"}},
-            {ItemID.CandyCornPieces, new []{"WithergateMinesBundle"}},
-            {ItemID.RockCandyGem, new []{"WithergateMinesBundle"}},
-            {ItemID.JawbreakerGem, new []{"WithergateMinesBundle"}},
-            {ItemID.HardButterscotchGem, new []{"WithergateMinesBundle"}},
-
-            {ItemID.TeaLeaves, new []{"WinterCropsBundle"}},
-            {ItemID.Turnip, new []{"WinterCropsBundle"}},
-            {ItemID.PurpleEggplant, new []{"WinterCropsBundle"}},
-            {ItemID.HeatFruit, new []{"WinterCropsBundle"}},
-            {ItemID.MarshmallowBean, new []{"WinterCropsBundle"}},
-            {ItemID.BrrNana, new []{"WinterCropsBundle"}},
-            {ItemID.StarFruit, new []{"WinterCropsBundle"}},
-            {ItemID.HexagonBerry, new []{"WinterCropsBundle"}},
-            {ItemID.SnowPea, new []{"WinterCropsBundle"}},
-            {ItemID.SnowBallCrop, new []{"WinterCropsBundle"}},
-            {ItemID.BlizzardBerry, new []{"WinterCropsBundle"}},
-            {ItemID.BalloonFruit, new []{"WinterCropsBundle"}},
-            {ItemID.PythagoreanBerry, new []{"WinterCropsBundle"}},
-            {ItemID.BlueMoonFruit, new []{"WinterCropsBundle"}},
-            {ItemID.CandyCane, new []{"WinterCropsBundle"}},
-
-            {ItemID.HoneyFlower, new []{"FlowersBundle"}},
-            {ItemID.RedRose, new []{"FlowersBundle"}},
-            {ItemID.BlueRose, new []{"FlowersBundle"}},
-            {ItemID.Daisy, new []{"FlowersBundle"}},
-            {ItemID.Orchid, new []{"FlowersBundle"}},
-            {ItemID.Tulip, new []{"FlowersBundle"}},
-            {ItemID.Hibiscus, new []{"FlowersBundle"}},
-            {ItemID.Lavender, new []{"FlowersBundle"}},
-            {ItemID.Sunflower, new []{"FlowersBundle"}},
-            {ItemID.Lily, new []{"FlowersBundle"}},
-            {ItemID.Lotus, new []{"FlowersBundle"}},
-
-            {ItemID.Grapes, new []{"SpringCropsBundle"}},
-            {ItemID.Wheat, new []{"SpringCropsBundle"}},
-            {ItemID.Tomato, new []{"SpringCropsBundle"}},
-            {ItemID.Corn, new []{"SpringCropsBundle"}},
-            {ItemID.Onion, new []{"SpringCropsBundle"}},
-            {ItemID.Potato, new []{"SpringCropsBundle"}},
-            {ItemID.Greenroot, new []{"SpringCropsBundle"}},
-            {ItemID.Carrot, new []{"SpringCropsBundle"}},
-            {ItemID.Kale, new []{"SpringCropsBundle"}},
-            {ItemID.Lettuce, new []{"SpringCropsBundle"}},
-            {ItemID.Cinnaberry, new []{"SpringCropsBundle"}},
-            {ItemID.Shimmeroot, new []{"SpringCropsBundle"}},
-
-            {ItemID.Garlic, new []{"FallCropsBundle"}},
-            {ItemID.Yam, new []{"FallCropsBundle"}},
-            {ItemID.SodaPopCrop, new []{"FallCropsBundle"}},
-            {ItemID.FizzyFruit, new []{"FallCropsBundle"}},
-            {ItemID.Cranberry, new []{"FallCropsBundle"}},
-            {ItemID.Barley, new []{"FallCropsBundle"}},
-            {ItemID.Pumpkin, new []{"FallCropsBundle"}},
-            {ItemID.GhostPepper, new []{"FallCropsBundle"}},
-            {ItemID.Butternut, new []{"FallCropsBundle"}},
-
-            {ItemID.OriginsoftheGrandTreeandNivaraBookI, new []{"NelvariTempleBooks"}},
-            {ItemID.OriginsoftheGrandTreeandNivaraBookII, new []{"NelvariTempleBooks"}},
-            {ItemID.OriginsoftheGrandTreeandNivaraBookIII, new []{"NelvariTempleBooks"}},
-            {ItemID.OriginsoftheGrandTreeandNivaraBookIV, new []{"NelvariTempleBooks"}},
-            {ItemID.OriginsoftheGrandTreeandNivaraBookV, new []{"NelvariTempleBooks"}},
-            {ItemID.OriginsofSunHavenandEliosBookI, new []{"NelvariTempleBooks"}},
-            {ItemID.OriginsofSunHavenandEliosBookII, new []{"NelvariTempleBooks"}},
-            {ItemID.OriginsofSunHavenandEliosBookIII, new []{"NelvariTempleBooks"}},
-            {ItemID.OriginsofSunHavenandEliosBookIV, new []{"NelvariTempleBooks"}},
-            {ItemID.OriginsofSunHavenandEliosBookV, new []{"NelvariTempleBooks"}},
-            {ItemID.OriginsofDynusandShadowsBookI, new []{"NelvariTempleBooks"}},
-            {ItemID.OriginsofDynusandShadowsBookII, new []{"NelvariTempleBooks"}},
-            {ItemID.OriginsofDynusandShadowsBookIII, new []{"NelvariTempleBooks"}},
-            {ItemID.OriginsofDynusandShadowsBookIV, new []{"NelvariTempleBooks"}},
-            {ItemID.OriginsofDynusandShadowsBookV, new []{"NelvariTempleBooks"}},
-
-            {ItemID.Armoranth, new []{"SummerCropsBundle"}},
-            {ItemID.GuavaBerry, new []{"SummerCropsBundle"}},
-            {ItemID.Beet, new []{"SummerCropsBundle"}},
-            {ItemID.Lemon, new []{"SummerCropsBundle"}},
-            {ItemID.Chocoberry, new []{"SummerCropsBundle"}},
-            {ItemID.Pineapple, new []{"SummerCropsBundle"}},
-            {ItemID.Pepper, new []{"SummerCropsBundle", "SpringCropsBundle"}},
-            {ItemID.Melon, new []{"SummerCropsBundle"}},
-            {ItemID.Stormelon, new []{"SummerCropsBundle"}},
-            {ItemID.Durian, new []{"SummerCropsBundle"}},
-
-            {ItemID.Log, new []{"ForagingBundle"}},
-            {ItemID.Apple, new []{"ForagingBundle"}},
-            {ItemID.Seaweed, new []{"ForagingBundle"}},
-            {ItemID.Blueberry, new []{"ForagingBundle"}},
-            {ItemID.Mushroom, new []{"ForagingBundle"}},
-            {ItemID.Orange, new []{"ForagingBundle"}},
-            {ItemID.Strawberry, new []{"ForagingBundle"}},
-            {ItemID.Berry, new []{"ForagingBundle"}},
-            {ItemID.Raspberry, new []{"ForagingBundle"}},
-            {ItemID.Peach, new []{"ForagingBundle"}},
-            {ItemID.SandDollar, new []{"ForagingBundle"}},
-            {ItemID.Starfish, new []{"ForagingBundle"}},
-
-            {ItemID.LeafieTrinket, new []{"CombatBundle"}},
-            {ItemID.EliteLeafieTrinket, new []{"CombatBundle"}},
-            {ItemID.CentipillarTrinket, new []{"CombatBundle"}},
-            {ItemID.PeppinchGreenTrinket, new []{"CombatBundle"}},
-            {ItemID.ScorpepperTrinket, new []{"CombatBundle"}},
-            {ItemID.EliteScorpepperTrinket, new []{"CombatBundle"}},
-            {ItemID.HatCrabTrinket, new []{"CombatBundle"}},
-            {ItemID.FloatyCrabTrinket, new []{"CombatBundle"}},
-            {ItemID.BucketCrabTrinket, new []{"CombatBundle"}},
-            {ItemID.UmbrellaCrabTrinket, new []{"CombatBundle"}},
-            {ItemID.ChimchuckTrinket, new []{"CombatBundle"}},
-            {ItemID.AncientSunHavenSword, new []{"CombatBundle"}},
-            {ItemID.AncientNelVarianSword, new []{"CombatBundle"}},
-            {ItemID.AncientWithergateSword, new []{"CombatBundle"}},
-
-            {ItemID.ManaPotion, new []{"AlchemyBundle"}},
-            {ItemID.HealthPotion, new []{"AlchemyBundle"}},
-            {ItemID.AttackPotion, new []{"AlchemyBundle"}},
-            {ItemID.SpeedPotion, new []{"AlchemyBundle"}},
-            {ItemID.DefensePotion, new []{"AlchemyBundle"}},
-            {ItemID.AdvancedAttackPotion, new []{"AlchemyBundle"}},
-            {ItemID.AdvancedDefensePotion, new []{"AlchemyBundle"}},
-            {ItemID.AdvancedSpellDamagePotion, new []{"AlchemyBundle"}},
-            {ItemID.IncredibleSpellDamagePotion, new []{"AlchemyBundle"}},
-            {ItemID.IncredibleAttackPotion, new []{"AlchemyBundle"}},
-            {ItemID.IncredibleDefensePotion, new []{"AlchemyBundle"}},
-
-            {ItemID.PetrifiedLog, new []{"ExplorationBundle"}},
-            {ItemID.PhoenixFeather, new []{"ExplorationBundle"}},
-            {ItemID.FairyWings, new []{"ExplorationBundle"}},
-            {ItemID.GriffonEgg, new []{"ExplorationBundle"}},
-            {ItemID.ManaSap, new []{"ExplorationBundle"}},
-            {ItemID.PumiceStone, new []{"ExplorationBundle"}},
-            {ItemID.MysteriousAntler, new []{"ExplorationBundle"}},
-            {ItemID.DragonFang, new []{"ExplorationBundle"}},
-            {ItemID.MonsterCandy, new []{"ExplorationBundle"}},
-            {ItemID.UnicornHairTuft, new []{"ExplorationBundle"}},
-
-            {ItemID.KrakenKale, new []{"WithergateFarmingBundle"}},
-            {ItemID.Tombmelon, new []{"WithergateFarmingBundle"}},
-            {ItemID.Suckerstem, new []{"WithergateFarmingBundle"}},
-            {ItemID.Razorstalk, new []{"WithergateFarmingBundle"}},
-            {ItemID.SnappyPlant, new []{"WithergateFarmingBundle"}},
-            {ItemID.Moonplant, new []{"WithergateFarmingBundle"}},
-            {ItemID.Eggplant, new []{"WithergateFarmingBundle"}},
-            {ItemID.DemonOrb, new []{"WithergateFarmingBundle"}},
-
-            {ItemID.Acorn, new []{"NelvariFarmingBundle"}},
-            {ItemID.RockFruit, new []{"NelvariFarmingBundle"}},
-            {ItemID.WaterFruit, new []{"NelvariFarmingBundle"}},
-            {ItemID.FireFruit, new []{"NelvariFarmingBundle"}},
-            {ItemID.WalkChoy, new []{"NelvariFarmingBundle"}},
-            {ItemID.WindChime, new []{"NelvariFarmingBundle"}},
-            {ItemID.ShiiwalkiMushroom, new []{"NelvariFarmingBundle"}},
-            {ItemID.DragonFruit, new []{"NelvariFarmingBundle"}},
-            {ItemID.ManaGem, new []{"NelvariFarmingBundle"}},
-            {ItemID.CatTail, new []{"NelvariFarmingBundle"}},
-            {ItemID.Indiglow, new []{"NelvariFarmingBundle"}},
-
+                    { ItemID.KrakenKale, 1 },
+                    { ItemID.Tombmelon, 1 },
+                    { ItemID.Suckerstem, 1 },
+                    { ItemID.Razorstalk, 1 },
+                    { ItemID.SnappyPlant, 1 },
+                    { ItemID.Moonplant, 1 },
+                    { ItemID.Eggplant, 1 },
+                    { ItemID.DemonOrb, 1 },
+                }
+            },
+            {
+                ItemID.NelvariFarmingBundle, new Dictionary<int, int>()
+                {
+                    { ItemID.Acorn, 1 },
+                    { ItemID.RockFruit, 1 },
+                    { ItemID.WaterFruit, 1 },
+                    { ItemID.FireFruit, 1 },
+                    { ItemID.WalkChoy, 1 },
+                    { ItemID.WindChime, 1 },
+                    { ItemID.ShiiwalkiMushroom, 1 },
+                    { ItemID.DragonFruit, 1 },
+                    { ItemID.ManaGem, 1 },
+                    { ItemID.CatTail, 1 },
+                    { ItemID.Indiglow, 1 },
+                }
+            },
+            {
+                ItemID.BundleAquariumSpring, new Dictionary<int, int>()
+                {
+                    { ItemID.Butterflyfish, 1 },
+                    { ItemID.Sunfish, 1 },
+                    { ItemID.FlowerFlounder, 1 },
+                    { ItemID.RaincloudRay, 1 },
+                    { ItemID.FloralTrout, 1 },
+                    { ItemID.NeonTetra, 1 },
+                    { ItemID.Seahorse, 1 },
+                    { ItemID.PaintedEgg, 1 },
+                    { ItemID.Tadpole, 1 },
+                }
+            },
+            {
+                ItemID.BundleAquariumSummer, new Dictionary<int, int>()
+                {
+                    { ItemID.Blazeel, 1 },
+                    { ItemID.HearthAngler, 1 },
+                    { ItemID.ScorchingSquid, 1 },
+                    { ItemID.MagmaStar, 1 },
+                    { ItemID.TinderTurtle, 1 },
+                    { ItemID.Pyrelus, 1 },
+                    { ItemID.FlameRay, 1 },
+                    { ItemID.MoltenSlug, 1 },
+                    { ItemID.Searback, 1 },
+                }
+            },
+            {
+                ItemID.BundleAquariumFall, new Dictionary<int, int>()
+                {
+                    { ItemID.Coducopia, 1 },
+                    { ItemID.KingSalmon, 1 },
+                    { ItemID.Hayfish, 1 },
+                    { ItemID.AcornAnchovy, 1 },
+                    { ItemID.VampirePiranha, 1 },
+                    { ItemID.Ghostfish, 1 },
+                    { ItemID.PumpkinJelly, 1 },
+                    { ItemID.PiratePerch, 1 },
+                    { ItemID.AutumnLeafSole, 1 },
+                }
+            },
+            {
+                ItemID.BundleAquariumWinter, new Dictionary<int, int>()
+                {
+                    { ItemID.Frostfin, 1 },
+                    { ItemID.ChristmasLightfish, 1 },
+                    { ItemID.HollyCarp, 1 },
+                    { ItemID.JingleBass, 1 },
+                    { ItemID.FrozenTuna, 1 },
+                    { ItemID.Scarffish, 1 },
+                    { ItemID.Heatfin, 1 },
+                    { ItemID.IcicleCarp, 1 },
+                    { ItemID.BlazingHerring, 1 },
+                }
+            },
+            {
+                ItemID.BundleAquariumNelvari, new Dictionary<int, int>()
+                {
+                    { ItemID.RobedParrotfish, 1 },
+                    { ItemID.Axolotl, 1 },
+                    { ItemID.FrilledBetta, 1 },
+                    { ItemID.Horsefish, 1 },
+                    { ItemID.Flamefish, 1 },
+                    { ItemID.DragonGulper, 1 },
+                    { ItemID.NeapolitanFish, 1 },
+                    { ItemID.Snobfish, 1 },
+                    { ItemID.KelpEel, 1 },
+                    { ItemID.PrincelyFrog, 1 },
+                    { ItemID.Angelfin, 1 },
+                    { ItemID.Bubblefish, 1 },
+                    { ItemID.CrystalTetra, 1 },
+                    { ItemID.SkyRay, 1 },
+                }
+            },
+            {
+                ItemID.BundleAquariumWithergate, new Dictionary<int, int>()
+                {
+                    { ItemID.Kraken, 1 },
+                    { ItemID.WaterBear, 1 },
+                    { ItemID.BonemouthBass, 1 },
+                    { ItemID.MummyTrout, 1 },
+                    { ItemID.DeadeyeShrimp, 1 },
+                    { ItemID.ElectricEel, 1 },
+                    { ItemID.BrainJelly, 1 },
+                    { ItemID.RedfinnedPincher, 1 },
+                    { ItemID.SeaBat, 1 },
+                    { ItemID.GhostheadTuna, 1 },
+                    { ItemID.Globfish, 1 },
+                    { ItemID.LivingJelly, 1 },
+                    { ItemID.Purrmaid, 1 },
+                    { ItemID.SlimeLeech, 1 },
+                    { ItemID.GoblinShark, 1 },
+                    { ItemID.Moonfish, 1 },
+                    { ItemID.ToothyAngler, 1 },
+                    { ItemID.VampireSquid, 1 },
+                    { ItemID.Viperfish, 1 },
+                    { ItemID.AlbinoSquid, 1 },
+                    { ItemID.Devilfin, 1 },
+                    { ItemID.ShadowTuna, 1 },
+                }
+            },
+            {
+                ItemID.BundleAquariumBigtank, new Dictionary<int, int>()
+                {
+                    { ItemID.PygmyTuna, 1 },
+                    { ItemID.Catfish, 1 },
+                    { ItemID.GoldFish, 1 },
+                    { ItemID.StreamlineCod, 1 },
+                    { ItemID.Salmon, 1 },
+                    { ItemID.ClownFish, 1 },
+                    { ItemID.BlackBass, 1 },
+                    { ItemID.RainbowTrout, 1 },
+                    { ItemID.PopeyeGoldfish, 1 },
+                    { ItemID.Pufferfish, 1 },
+                    { ItemID.IronheadSturgeon, 1 },
+                    { ItemID.Cuddlefish, 1 },
+                    { ItemID.Lobster, 1 },
+                    { ItemID.SilverCarp, 1 },
+                    { ItemID.Tuna, 1 },
+                    { ItemID.BluntedSwordfish, 1 },
+                    { ItemID.RibbonEel, 1 },
+                    { ItemID.TigerTrout, 1 },
+                    { ItemID.Eel, 1 },
+                    { ItemID.RedSnapper, 1 },
+                    { ItemID.Carp, 1 },
+                    { ItemID.RedeyePiranha, 1 },
+                    { ItemID.AngelFish, 1 },
+                    { ItemID.WhitebellyShark, 1 },
+                    { ItemID.KoiFish, 1 },
+                    { ItemID.SandstoneFish, 1 },
+                }
+            },
+            {
+                ItemID.FishingBundle, new Dictionary<int, int>()
+                {
+                    { ItemID.HandmadeBobber, 1 },
+                    { ItemID.AncientMagicStaff, 1 },
+                    { ItemID.BronzeDragonRelic, 1 },
+                    { ItemID.OldSwordHilt, 1 },
+                    { ItemID.NelVarianRunestone, 1 },
+                    { ItemID.AncientElvenHeaddress, 1 },
+                    { ItemID.OldMayoralPainting, 1 },
+                    { ItemID.TentacleMonsterEmblem, 1 },
+                    { ItemID.AncientAngelQuill, 1 },
+                    { ItemID.AncientNagaCrook, 1 },
+                    { ItemID.AncientAmariTotem, 1 },
+                }
+            },
+            {
+                ItemID.DynusAltarRareitems, new Dictionary<int, int>()
+                {
+                    { ItemID.AdventureKeepsake, 1 },
+                    { ItemID.RichesKeepsake, 1 },
+                    { ItemID.RomanceKeepsake, 1 },
+                    { ItemID.PeaceKeepsake, 1 },
+                }
+            },
+            {
+                ItemID.DynusAltarFruit0, new Dictionary<int, int>()
+                {
+                    { ItemID.Raspberry, 20 },
+                    { ItemID.Peach, 10 },
+                    { ItemID.Orange, 20 },
+                    { ItemID.Blueberry, 20 },
+                    { ItemID.Berry, 10 },
+                    { ItemID.Apple, 20 },
+                }
+            },
+            {
+                ItemID.DynusAltarForaging0, new Dictionary<int, int>()
+                {
+                    { ItemID.Log, 300 },
+                    { ItemID.FireCrystal, 30 },
+                    { ItemID.EarthCrystal, 30 },
+                    { ItemID.WaterCrystal, 30 },
+                    { ItemID.SandDollar, 10 },
+                }
+            },
+            {
+                ItemID.DynusAltarGold0, new Dictionary<int, int>()
+                {
+                    { ItemID.GoldBar, 10 },
+                }
+            },
+            {
+                ItemID.DynusAltarMiscenalleous0, new Dictionary<int, int>() // cooking ??
+                {
+                    { ItemID.Cheesecake, 1 },
+                    { ItemID.SpicyRamen, 1 },
+                    { ItemID.SesameRiceBall, 1 },
+                    { ItemID.Pizza, 1 },
+                    { ItemID.Cookies, 1 },
+                    { ItemID.Coffee, 1 },
+                    { ItemID.TomatoSoup, 1 },
+                    { ItemID.ShimmerootTreat, 1 },
+                    { ItemID.EnergySmoothie, 1 },
+                }
+            },
+            {
+                ItemID.DynusAltarMining0, new Dictionary<int, int>()
+                {
+                    { ItemID.Stone, 999 },
+                    { ItemID.Coal, 50 },
+                    { ItemID.CopperOre, 100 },
+                    { ItemID.Sapphire, 10 },
+                    { ItemID.Ruby, 10 },
+                    { ItemID.Amethyst, 10 },
+                    { ItemID.Diamond, 5 },
+                    { ItemID.Havenite, 5 },
+                }
+            },
+            {
+                ItemID.DynusAltarFarming0, new Dictionary<int, int>()
+                {
+                    { ItemID.Wheat, 30 },
+                    { ItemID.Corn, 30 },
+                    { ItemID.Potato, 30 },
+                    { ItemID.Tomato, 30 },
+                    { ItemID.Carrot, 30 },
+                    { ItemID.SugarCane, 30 },
+                    { ItemID.Onion, 30 },
+                    { ItemID.Greenroot, 30 },
+                    { ItemID.HoneyFlower, 30 },
+                    { ItemID.Rice, 30 },
+                }
+            },
+            {
+                ItemID.DynusAltarFishing0, new Dictionary<int, int>()
+                {
+                    { ItemID.Dorado, 1 },
+                    { ItemID.Duorado, 1 },
+                    { ItemID.Crab, 1 },
+                    { ItemID.SeaBass, 1 },
+                    { ItemID.GoldFish, 1 },
+                    { ItemID.BonemouthBass, 1 },
+                    { ItemID.Chromafin, 1 },
+                    { ItemID.GoldenCarp, 1 },
+                    { ItemID.Flamefish, 1 },
+                    { ItemID.Purrmaid, 1 },
+                    { ItemID.CrystalTetra, 1 },
+                    { ItemID.SkyRay, 1 },
+                }
+            },
         };
 
-        public static Dictionary<int, string[]> AltarRequirements = new()
-        {
-            {ItemID.Stone, new []{"DynusAltarMining"}},
-            {ItemID.Coal, new []{"DynusAltarMining"}},
-            {ItemID.CopperOre, new []{"DynusAltarMining"}},
-            {ItemID.Sapphire, new []{"DynusAltarMining"}},
-            {ItemID.Ruby, new []{"DynusAltarMining"}},
-            {ItemID.Amethyst, new []{"DynusAltarMining"}},
-            {ItemID.Diamond, new []{"DynusAltarMining"}},
-            {ItemID.Havenite, new []{"DynusAltarMining"}},
+        private static Dictionary<(int BundleID, int ItemID), int> DonatedItems = new();
 
-            {ItemID.Dorado, new []{"DynusAltarFishing"}},
-            {ItemID.Duorado, new []{"DynusAltarFishing"}},
-            {ItemID.Crab, new []{"DynusAltarFishing"}},
-            {ItemID.SeaBass, new []{"DynusAltarFishing"}},
-            {ItemID.GoldFish, new []{"DynusAltarFishing"}},
-            {ItemID.BonemouthBass, new []{"DynusAltarFishing"}},
-            {ItemID.Chromafin, new []{"DynusAltarFishing"}},
-            {ItemID.GoldenCarp, new []{"DynusAltarFishing"}},
-            {ItemID.Flamefish, new []{"DynusAltarFishing"}},
-            {ItemID.Purrmaid, new []{"DynusAltarFishing"}},
-            {ItemID.CrystalTetra, new []{"DynusAltarFishing"}},
-            {ItemID.SkyRay, new []{"DynusAltarFishing"}},
+        private static Dictionary<int, List<int>> ReverseLookupTable = new();
 
-            {ItemID.Log, new []{"DynusAltarForaging"}},
-            {ItemID.FireCrystal, new []{"DynusAltarForaging"}},
-            {ItemID.EarthCrystal, new []{"DynusAltarForaging"}},
-            {ItemID.WaterCrystal, new []{"DynusAltarForaging"}},
-            {ItemID.SandDollar, new []{"DynusAltarForaging"}},
-
-            {ItemID.Cheesecake, new []{"DynusAltarCooking"}},
-            {ItemID.SpicyRamen, new []{"DynusAltarCooking"}},
-            {ItemID.SesameRiceBall, new []{"DynusAltarCooking"}},
-            {ItemID.Pizza, new []{"DynusAltarCooking"}},
-            {ItemID.Cookies, new []{"DynusAltarCooking"}},
-            {ItemID.Coffee, new []{"DynusAltarCooking"}},
-            {ItemID.TomatoSoup, new []{"DynusAltarCooking"}},
-            {ItemID.ShimmerootTreat, new []{"DynusAltarCooking"}},
-            {ItemID.EnergySmoothie, new []{"DynusAltarCooking"}},
-
-            {ItemID.GoldBar, new []{"DynusAltarGold"}},
-
-            {ItemID.Wheat, new []{"DynusAltarFarming"}},
-            {ItemID.Corn, new []{"DynusAltarFarming"}},
-            {ItemID.Potato, new []{"DynusAltarFarming"}},
-            {ItemID.Tomato, new []{"DynusAltarFarming"}},
-            {ItemID.Carrot, new []{"DynusAltarFarming"}},
-            {ItemID.SugarCane, new []{"DynusAltarFarming"}},
-            {ItemID.Onion, new []{"DynusAltarFarming"}},
-            {ItemID.Greenroot, new []{"DynusAltarFarming"}},
-            {ItemID.HoneyFlower, new []{"DynusAltarFarming"}},
-            {ItemID.Rice, new []{"DynusAltarFarming"}},
-
-            {ItemID.Raspberry, new []{"DynusAltarFruit"}},
-            {ItemID.Peach, new []{"DynusAltarFruit"}},
-            {ItemID.Orange, new []{"DynusAltarFruit"}},
-            {ItemID.Blueberry, new []{"DynusAltarFruit"}},
-            {ItemID.Berry, new []{"DynusAltarFruit"}},
-            {ItemID.Apple, new []{"DynusAltarFruit"}},
-
-            {ItemID.AdventureKeepsake, new []{"DynusAltarRareItems"}},
-            {ItemID.RichesKeepsake, new []{"DynusAltarRareItems"}},
-            {ItemID.RomanceKeepsake, new []{"DynusAltarRareItems"}},
-            {ItemID.PeaceKeepsake, new []{"DynusAltarRareItems"}},
-
-        };
 
         private void Awake()
         {
@@ -441,7 +583,9 @@ namespace MuseumTracker
             try
             {
                 Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} v{PluginInfo.PLUGIN_VERSION} is loaded!");
-                this.harmony.PatchAll();
+                BuildReverseLookupTable();
+                harmony.PatchAll();
+                ScenePortalManager.onLoadedScene += OnSceneLoaded;
             }
             catch (Exception e)
             {
@@ -449,6 +593,64 @@ namespace MuseumTracker
             }
         }
 
+        private void BuildReverseLookupTable()
+        {
+            foreach (var bundle in Bundles)
+            {
+                foreach (var itemID in bundle.Value.Keys)
+                {
+                    if (!ReverseLookupTable.ContainsKey(itemID))
+                    {
+                        ReverseLookupTable[itemID] = new List<int> { bundle.Key };
+                    }
+                    else
+                    {
+                        ReverseLookupTable[itemID].Add(bundle.Key);
+                    }
+                }   
+            }
+        }
+
+        public static void OnSceneLoaded()
+        {
+            foreach (var sceneId in ScenesToCheck)
+            {
+                logger.LogInfo(sceneId);
+                HandleSceneDecorations(sceneId);
+            }
+        }
+
+        private static void HandleSceneDecorations(int sceneId)
+        {
+            logger.LogInfo($"Checking scene {sceneId}");
+            if (!SingletonBehaviour<GameSave>.Instance.CurrentWorld.decorations.ContainsKey((short)sceneId))
+            {
+                return;
+            }
+            
+            var decorations = GameSave.Instance.CurrentWorld.decorations[(short)sceneId];
+            
+            foreach (var decoration in decorations)
+            {
+                DecorationPositionData decorationPositionData = decoration.Value;
+
+                if (decorationPositionData.id != 0 && Bundles.ContainsKey(decorationPositionData.id))
+                {
+                    ChestData chestData = null;
+                    Decoration.DeserializeMeta<ChestData>(decorationPositionData.meta, ref chestData);
+                    
+                    foreach (var item in chestData.items.Values)
+                    {
+                        if (item.Item.ID() > 0)
+                        {
+                            logger.LogInfo($"{decorationPositionData.id} {item.Item.ID()} {item.Amount}");
+                            DonatedItems[(decorationPositionData.id, item.Item.ID())] = item.Amount;
+                        }
+                    }
+                }
+            }
+        }
+        
         public static string GetProgressKey(BundleType bundleType, string bundleId, int itemId)
         {
             return "Mod_MuseumTracker_" + bundleType + bundleId + itemId;
@@ -460,23 +662,49 @@ namespace MuseumTracker
             {
                 return;
             }
+
+            if (!Bundles.ContainsKey(bundle.id))
+            {
+                return;
+            }
             
-            string debug = "";
+            // Remove current donation counts
+            foreach (var itemID in Bundles[bundle.id].Keys)
+            {
+                logger.LogInfo($"Remove {bundle.id} {itemID}");
+                DonatedItems.Remove((bundle.id, itemID));
+            }
             
+            foreach (var item in bundle.sellingInventory.Items)
+            {
+                logger.LogInfo(item.id);
+                if (item.slot.itemToAccept.id > 0)
+                {
+                    logger.LogInfo(item.amount);
+                    DonatedItems[(bundle.id, item.slot.itemToAccept.id)] = item.amount;
+                }
+            }
+            
+            // BC: remove old progress
             foreach (SlotItemData slotItemData in bundle.sellingInventory.Items)
             {
-                foreach (var field in typeof(ItemID).GetFields())
+                var gameSave = SingletonBehaviour<GameSave>.Instance;
+
+                string[] progressIds =
                 {
-                    if ((int)field.GetValue(null) == slotItemData.slot.itemToAccept.id)
+                    GetProgressKey(bundle.bundleType, bundle.progressTokenWhenFull.progressID, slotItemData.slot.itemToAccept.id),
+                    GetProgressKey(bundle.bundleType, bundle.progressTokenWhenFull.progressID, slotItemData.slot.itemToAccept.id) + "_string"
+                };
+
+                foreach (var progressId in progressIds)
+                {
+                    if (gameSave.CurrentWorld.progress.ContainsKey(progressId.GetStableHashCode()))
                     {
-                        debug += "{ItemID." + field.Name + ", \"" + bundle.progressTokenWhenFull.progressID + "\"},\n";
+                        logger.LogInfo($"Found progress for {progressId}");
+                        gameSave.CurrentWorld.progress.Remove(progressId.GetStableHashCode());
                     }
                 }
-                
-                SingletonBehaviour<GameSave>.Instance.SetProgressBoolWorld(GetProgressKey(bundle.bundleType, bundle.progressTokenWhenFull.progressID, slotItemData.slot.itemToAccept.id), slotItemData.amount >= slotItemData.slot.numberOfItemToAccept);
-                SingletonBehaviour<GameSave>.Instance.SetProgressStringWorld(GetProgressKey(bundle.bundleType, bundle.progressTokenWhenFull.progressID, slotItemData.slot.itemToAccept.id) + "_string", slotItemData.amount.ToString() + "/" + slotItemData.slot.numberOfItemToAccept.ToString());
             }
-            //logger.LogInfo(debug);
         }
         
         [HarmonyPatch(typeof(ItemData), nameof(ItemData.FormattedDescription), MethodType.Getter)]
@@ -486,45 +714,27 @@ namespace MuseumTracker
             {
                 try
                 {
-                    if (MuseumRequirements.TryGetValue(__instance.id, out string[] museumBundles))
+                    if (ReverseLookupTable.TryGetValue(__instance.id, out var bundleIds))
                     {
-                        foreach (string museumBundle in museumBundles)
-                        { 
-                            bool progress = !SingletonBehaviour<GameSave>.Instance.GetProgressBoolWorld(GetProgressKey(BundleType.MuseumBundle, museumBundle, __instance.id));
-                            if (!progress) continue;
-                            string amounts = SingletonBehaviour<GameSave>.Instance.GetProgressStringWorld(GetProgressKey(BundleType.MuseumBundle, museumBundle, __instance.id) + "_string");
-                            if (amounts.Length > 0)
+                        foreach (int bundleId in bundleIds)
+                        {
+                            var requiredAmount = Bundles[bundleId][__instance.id];
+
+                            if (!DonatedItems.TryGetValue((bundleId, __instance.id), out var donated))
                             {
-                                __result = __result + "\n<color=#ed77f8><size=65%>Required: " + BundleNames[museumBundle] + " ("+ amounts + ")</size></color>";
+                                donated = 0;
                             }
-                            else
+
+                            if (donated < requiredAmount)
                             {
-                                __result = __result + "\n<color=#ed77f8><size=65%>Required: " + BundleNames[museumBundle] + "</size></color>";
+                                __result += $"\n<color=#ed77f8><size=65%>Required: {BundleNames[bundleId]} ({donated}/{requiredAmount})</size></color>";
                             }
                         }
                     }
-
-                    if (AltarRequirements.TryGetValue(__instance.id, out string[] altarBundles))
-                    {
-                        foreach (string altarBundle in altarBundles)
-                        { 
-                            bool progress = !SingletonBehaviour<GameSave>.Instance.GetProgressBoolWorld(GetProgressKey(BundleType.DynusAltar, altarBundle, __instance.id));
-                            if (!progress) continue;
-                            string amounts = SingletonBehaviour<GameSave>.Instance.GetProgressStringWorld(GetProgressKey(BundleType.DynusAltar, altarBundle, __instance.id) + "_string");
-                            if (amounts.Length > 0)
-                            {
-                                __result = __result + "\n<color=#ed77f8><size=65%>Required: " + BundleNames[altarBundle] + " ("+ amounts + ")</size></color>";
-                            }
-                            else
-                            {
-                                __result = __result + "\n<color=#ed77f8><size=65%>Required: " + BundleNames[altarBundle] + "</size></color>";
-                            }
-                        }
-                    }                   
                 }
                 catch (Exception e)
                 {
-                    logger.LogError(e);
+                    logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} error: {e}");
                 }
             }
         }
