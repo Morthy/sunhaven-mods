@@ -56,6 +56,7 @@ public class Plugin : BaseUnityPlugin
         { SaleType.WithergateMedium, 1.5f },
         { SaleType.WithergateLarge, 2.0f },
         { SaleType.NelvariElvenFurniture, 1.5f },
+        { SaleType.Anne, 10f }
     };
 
     private static Dictionary<string, int> Rerolls = new ();
@@ -77,12 +78,27 @@ public class Plugin : BaseUnityPlugin
 
     private static bool DidSkipPrompt(SaleType type)
     {
+        if (type is SaleType.ClothingStoreMannequin1 or SaleType.ClothingStoreMannequin2 or SaleType.ClothingStoreMannequin3)
+        {
+            type = SaleType.ClothingStoreMannequin0;
+        }
+        
         if (SkipPrompt.TryGetValue(type, out bool result))
         {
             return result;
         }
 
         return false;
+    }
+
+    private static void SetSkipPrompt(SaleType type)
+    {
+        if (type is SaleType.ClothingStoreMannequin1 or SaleType.ClothingStoreMannequin2 or SaleType.ClothingStoreMannequin3)
+        {
+            type = SaleType.ClothingStoreMannequin0;
+        }
+        
+        SkipPrompt[type] = true;
     }
     
     private static int GetRerollPrice(Entity saleStand)
@@ -371,11 +387,11 @@ public class Plugin : BaseUnityPlugin
                 2,
                 new Response()
                 {
-                    responseText = () => "Yes, and don't ask again for this stand",
+                    responseText = () => "Yes, and don't ask again for this this price",
                     action = () =>
                     {
                         DoReroll(saleStand);
-                        SkipPrompt[saleType] = true;
+                        SetSkipPrompt(saleType);
                     }
                 }
             },
