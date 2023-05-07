@@ -615,8 +615,14 @@ namespace MuseumTracker
         {
             foreach (var sceneId in ScenesToCheck)
             {
-                logger.LogInfo(sceneId);
-                HandleSceneDecorations(sceneId);
+                try
+                {
+                    HandleSceneDecorations(sceneId);
+                }
+                catch (Exception e)
+                {
+                    logger.LogError(e);
+                }
             }
         }
 
@@ -700,7 +706,7 @@ namespace MuseumTracker
                 {
                     if (gameSave.CurrentWorld.progress.ContainsKey(progressId.GetStableHashCode()))
                     {
-                        logger.LogInfo($"Found progress for {progressId}");
+
                         gameSave.CurrentWorld.progress.Remove(progressId.GetStableHashCode());
                     }
                 }
@@ -734,7 +740,7 @@ namespace MuseumTracker
                 }
                 catch (Exception e)
                 {
-                    logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} error: {e}");
+                    logger.LogError($"Plugin {PluginInfo.PLUGIN_GUID} error: {e}");
                 }
             }
         }
