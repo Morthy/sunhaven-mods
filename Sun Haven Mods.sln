@@ -38,6 +38,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoveSkillcap", "RemoveSki
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shrek", "Shrek\Shrek.csproj", "{FCC59E79-0617-4F6B-806A-970D722A5866}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StoreReroll", "StoreReroll\StoreReroll.csproj", "{67A51F4A-A04F-4ABA-9CD3-832B9F8682F1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -120,5 +122,9 @@ Global
 		{FCC59E79-0617-4F6B-806A-970D722A5866}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FCC59E79-0617-4F6B-806A-970D722A5866}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FCC59E79-0617-4F6B-806A-970D722A5866}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67A51F4A-A04F-4ABA-9CD3-832B9F8682F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67A51F4A-A04F-4ABA-9CD3-832B9F8682F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67A51F4A-A04F-4ABA-9CD3-832B9F8682F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67A51F4A-A04F-4ABA-9CD3-832B9F8682F1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
