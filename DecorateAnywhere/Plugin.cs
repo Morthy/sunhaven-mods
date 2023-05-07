@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using Wish;
@@ -11,6 +12,7 @@ namespace DecorateAnywhere
     {
         private Harmony harmony = new Harmony(PluginInfo.PLUGIN_GUID);
         public static ManualLogSource logger;
+        private static ConfigEntry<bool> Enabled;
 
         private void Awake()
         {            
@@ -22,6 +24,8 @@ namespace DecorateAnywhere
                 new HarmonyMethod(typeof(Patches).GetMethod("GameManagerInvalidDecorationPlacement"))
             );
             
+            Enabled = Config.Bind<bool>("General", "Enabled", true, "Enable/disable the mod");
+            
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} v{PluginInfo.PLUGIN_VERSION} is loaded!");
         }
 
@@ -30,7 +34,7 @@ namespace DecorateAnywhere
         {
             public static bool GameManagerInvalidDecorationPlacement(ref bool canBePlaced, ref Decoration decoration)
             {
-                if (Player.Instance.pause || decoration is Crop)
+                if (Player.Instance.pause || decoration is Crop || !Enabled.Value)
                 {
                     return true;
                 }
