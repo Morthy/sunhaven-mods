@@ -1,0 +1,20 @@
+﻿{
+  "name": "Large Sun Haven Sprinkler",
+  "description": "Sprinkles water on your farm.\n<i><size=60%>Not guaranteed to add sprinkles to your ice cream.</size></i>",
+  "helpDescription": "Automatically waters the surrounding 2 tiles in each direction overnight",
+  "useDescription": "(Left click to place)",
+  "id": 30012,
+  "stackSize": 999,
+  "canSell": 1,
+  "canTrade": 1,
+  "canTrash": 1,
+  "isForageable": 0,
+  "isGem": 0,
+  "isAnimalProduct": 0,
+  "sellPrice": 200.0,
+  "orbsSellPrice": 0.0,
+  "ticketSellPrice": 0.0,
+  "category": 1,
+  "rarity": 2,
+  "hearts": 1
+}
