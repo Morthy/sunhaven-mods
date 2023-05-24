@@ -59,6 +59,12 @@
         </Reference>        
         <Reference Include="ZeroFormatter">
             <HintPath>..\lib2\ZeroFormatter.Interfaces.dll</HintPath>
+        </Reference>        
+        <Reference Include="DOVirtual">
+            <HintPath>..\lib2\DOTween.dll</HintPath>
+        </Reference>        
+        <Reference Include="Mirror">
+            <HintPath>..\lib2\Mirror.dll</HintPath>
         </Reference>
     </ItemGroup>
 
@@ -72,7 +78,7 @@
     <!-- Copy to plugins folder and zip -->
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
         <ItemGroup>
-            <AllFiles Include="$(TargetDir)**\*.*" Exclude="$(TargetDir)**\*.pdb;$(TargetDir)**\Unity*;$(TargetDir)**\Sirenix*;$(TargetDir)**\SunHaven*;$(TargetDir)**\Zero*" />
+            <AllFiles Include="$(TargetDir)**\*.*" Exclude="$(TargetDir)**\*.pdb;$(TargetDir)**\Unity*;$(TargetDir)**\Sirenix*;$(TargetDir)**\SunHaven*;$(TargetDir)**\Zero*;$(TargetDir)**\DO*" />
         </ItemGroup>
         <Copy SourceFiles="@(AllFiles)" DestinationFolder="$(GamePath)\BepInEx\plugins\%(RecursiveDir)"></Copy>
         <Delete Files="$(ProjectDir)\bin\$(TargetName).zip" />
