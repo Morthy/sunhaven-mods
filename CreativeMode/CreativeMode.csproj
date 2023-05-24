@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Version>1.0.1</Version>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Include="data/30010.json" />
+    <EmbeddedResource Include="img/*.png" />
+  </ItemGroup>
+  
+  
+
+  <Import Project="$(SolutionDir)\private.targets" />
+  <Import Project="$(SolutionDir)\solution.targets" />
+
+</Project>
