@@ -1,0 +1,45 @@
+﻿{
+  "id": 30024,
+  "type": "decoration",
+  "name": "Example table",
+  "description": "It's just a table.",
+  "helpDescription": "",
+  "useDescription": "(Left click to place)",
+  "stackSize": 999,
+  "canSell": true,
+  "canTrade": true,
+  "canTrash": true,
+  "goldSellPrice": 300,
+  "orbSellPrice": 0,
+  "ticketSellPrice": 0,
+  "category": 1,
+  "rarity": 1,
+  "decoration": {
+    "size": [12, 12],
+    "functionality": "table",
+    "tableSize": [10, 8],
+    "tableOffset": [1, 2],
+    "placeableOnTables": false,
+    "placeableOnWalls": false,
+    "placeableAsRug": false
+  },
+  "shopEntries": [
+    {
+      "shop": "GeneralMerchantTable",
+      "amount": 1,
+      "costGold": 50,
+      "costTickets": 0,
+      "costOrbs": 0
+    }
+  ],
+  "recipes": [
+    {
+      "list": "RecipeList_Anvil",
+      "hours": 1,
+      "inputs": [
+        {"id": 2002, "amount": 1},
+        {"id": 2001, "amount": 1}
+      ]
+    }
+  ]
+}
