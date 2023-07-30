@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
@@ -73,14 +74,16 @@ namespace CustomItems
                 {
                     logger.LogError(e);
                 }
+
+                //logger.LogInfo(Resources.FindObjectsOfTypeAll<RecipeList>().Aggregate("", (current, rl) => current + (rl.name + "\n")));
             }
             
             
             [HarmonyPostfix]
             [HarmonyPatch(typeof(SaleManager), "Awake")]
             public static void SaleManagerAwake()
-            {
-                try
+            { 
+               try
                {
                    CustomItems.AddItemsToShops();
                }
@@ -88,6 +91,8 @@ namespace CustomItems
                {
                    logger.LogError(e);
                }
+
+               //logger.LogInfo(SingletonBehaviour<SaleManager>.Instance.merchantTables.Aggregate("", (current, x) => current + (x.name + "\n")));
             }
         }
     }

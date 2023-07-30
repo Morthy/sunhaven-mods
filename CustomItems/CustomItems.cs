@@ -20,8 +20,8 @@ public class CustomItems
         "useDescription",
         "helpDescription",
         "stackSize",
-        "sellPrice",
-        "orbsSellPrice",
+        "goldSellPrice",
+        "orbSellPrice",
         "ticketSellPrice",
         "category",
         "rarity",
@@ -40,7 +40,6 @@ public class CustomItems
             {
                 var definition = new ItemDefinition();
                 JSON.FillObject(definition, File.ReadAllText(path));
-                
 
                 var folder = Path.GetDirectoryName(path);
 
@@ -120,10 +119,9 @@ public class CustomItems
 
         foreach (var requiredKey in RequiredItemKeys)
         {
-            Plugin.logger.LogInfo(requiredKey);
             if (data.GetType().GetField(requiredKey) == null)
             {
-                throw new Exception($"Item field \"{requiredKey}\" must be present.");
+                throw new Exception($"Item field \"{requiredKey}\" must be present for item {data.id}.");
             }
         }
     }

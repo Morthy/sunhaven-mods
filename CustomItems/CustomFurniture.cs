@@ -32,7 +32,7 @@ public class CustomFurniture
         {
             if (furnitureData.GetType().GetField(requiredKey) == null)
             {
-                throw new Exception($"Decoration field \"{requiredKey}\" must be present.");
+                throw new Exception($"Decoration field \"{requiredKey}\" must be present for item {definition.id}.");
             }
         }
     }

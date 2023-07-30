@@ -85,7 +85,7 @@ Your item definition file (.json) requires at minimum the following information:
 | category        | Item category:<br/>0 = Equip, 1 = Use, 2 = Craftable, 3 = Monster, 4 = Furniture, 5 = Quest |
 | rarity          | Item rarity:<br/>0 = Common, 1 = Uncommon, 2 = Rare, 3 = Epic, 4 = Legendary                |
 
-The item image (.png) can be any size, the game will modify it to fit within the item icon. If you're adding custom furniture, this image be of the furniture as it will be shown in the game world (more info in the furniture section).
+The item image (.png) can be any size, the game will modify it to fit within the item icon. If you're adding custom furniture, this image will be of the furniture as it will be shown in the game world (more info in the furniture section).
 
 ## Creating custom furniture
 
@@ -93,7 +93,7 @@ You can extend a base custom item to make it act as furniture by adding addition
 
 For furniture, the image you provide (e.g. 61000.png) will be what is displayed in the game world when the furniture is placed.
 
-Keep in mind that Sun Haven is a pixel based game so will enlarge your image when rendered in-game. The furniture will be rendered at around 4x the actual image size.
+Keep in mind that Sun Haven is a pixel based game and so will enlarge your image when rendered in-game. The furniture will be rendered at around 4x the actual image size.
 
 A furniture definition looks like this. Note that not all decoration fields are required.
 
@@ -141,13 +141,15 @@ A furniture definition looks like this. Note that not all decoration fields are 
 
 The sizes in the game item definitions are not the same as the width/height of your furniture image.
 
-1 width in the game = 4 pixels in your image. If your image is 48x48px, your decoration size could be 12x12.
+1 width in the game = 4 pixels in your image. If your image is 48x48px, your decoration size **could be** 12x12.
 
 **Why could be? The size of the decoration isn't always directly proportional to the size of your image.** The size should represent the base of the decoration item in the 3d world, e.g. where it's actually placed.
 
 For example, a large wardrobe is very tall but you don't want the size to include the full height, only the base surface so that it can be placed up against the wall, or to allow a player to walk behind it.
 
 The size is currently also used to define the collider for the furniture. The collider is the area where the player is blocked from moving into.
+
+In other words: The size should represent the placeable tiles on the floor that your furniture will be placed on.
 
 ## Making custom items available
 
@@ -169,7 +171,8 @@ Items can be added to as many shops as you wish by adding the following to your 
 	],
 ```
 
-For a list of possible shops, see here:
+For a list of possible shops, see here: [Shops.md](Shops.md)
+
 
 ### Adding a custom item as a recipe to a crafting table
 
@@ -187,6 +190,8 @@ Items can be added to crafting tables by adding the following to your item defin
 		}
 	]
 ```
+
+For a list of possible crafting table recipe lists, see here: [RecipeLists.md](RecipeLists.md)
 
 ## Need help? Please join the discord
 
