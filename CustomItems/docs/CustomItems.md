@@ -43,8 +43,8 @@ Any .json file in the CustomItems folder will be considered, but I recommend cre
 plugins/CustomItems/
 plugins/CustomItems/CustomItems.dll
 plugins/CustomItems/YourModName/
-plugins/CustomItems/YourModName/1001.json
-plugins/CustomItems/YourModName/1001.png
+plugins/CustomItems/YourModName/61000.json
+plugins/CustomItems/YourModName/61000.png
 ```
 
 Your item definition file (.json) requires at minimum the following information:
