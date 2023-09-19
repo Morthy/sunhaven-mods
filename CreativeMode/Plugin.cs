@@ -20,6 +20,7 @@ public class Plugin : BaseUnityPlugin
     private static ConfigEntry<bool> _unlimitedFarmAnimals;
     private static ConfigEntry<bool> _unlimitedFishingNets;
     public static ConfigEntry<int> CataloguePageSize;
+    public static ConfigEntry<bool> ShowUnownedDLCItems;
 
     private static readonly List<int> DebugIgnoreItems = new()
     {
@@ -44,6 +45,7 @@ public class Plugin : BaseUnityPlugin
         _unlimitedFarmAnimals = Config.Bind("General", "Unlimited farm animals", true, "Allow unlimited farm animals on your farms");
         _unlimitedFishingNets = Config.Bind("General", "Unlimited fishing nets", true, "Allow unlimited fishing nets on your farms");
         CataloguePageSize = Config.Bind("General", "Catalogue page size", 100, "Number of items to show per page in the catalogue");
+        ShowUnownedDLCItems = Config.Bind("General", "Show unowned DLC items", true, "Set to false to hide DLC items you cannot obtain");
         
         Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} v{PluginInfo.PLUGIN_VERSION} is loaded!");
     }
@@ -80,11 +82,18 @@ public class Plugin : BaseUnityPlugin
 
             var name = DebugGetItemIDName(i.id);
             var placeableType = i.useItem.GetType();
+            
+            var itemName = i.name;
+
+            if (i.isDLCItem)
+            {
+                itemName = itemName += "( DLC )";
+            }
                 
             if (i.useItem is Placeable)
             {
                 var decoration = Traverse.Create(i.useItem).Field("_decoration").GetValue<Decoration>();
-                if (Traverse.Create(i.useItem).Field("useAbleByPlayer").GetValue<bool>() == false)
+                if (Traverse.Create(i.useItem).Field("useAbleByPlayer").GetValue<bool>() == true)
                 {
                     var decorationType = decoration != null ? decoration.GetType().ToString() : "";
 
@@ -92,14 +101,13 @@ public class Plugin : BaseUnityPlugin
                     {
                         continue;
                     }
-                        
-                    txt += $"{i.id},{i.name},ItemID.{name},{placeableType},{decorationType}," + DebugGetCategories(i.id) + "\n";
+                    //txt += $"{i.id},{itemName},ItemID.{name},{placeableType},{decorationType}," + DebugGetCategories(i.id) + "\n";
                 }
 
             }
             else if (i.useItem is TilePlaceable or Seeds or AnimalSpawnItem or PetSpawnItem)
             {
-                //txt += $"{i.id},{i.name},ItemID.{name},{placeableType},," + DebugGetCategories(i.id) + "\n";
+                txt += $"{i.id},{itemName},ItemID.{name},{placeableType},," + DebugGetCategories(i.id) + "\n";
             }
             
             
@@ -147,7 +155,7 @@ public class Plugin : BaseUnityPlugin
         public static void MainMenuControllerAwake()
         {
             ItemHandler.CreateDecorationCatalogueItem();
-            Debug();
+            //Debug();
         }
         
         [HarmonyPostfix]

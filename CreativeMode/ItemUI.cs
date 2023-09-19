@@ -199,21 +199,34 @@ public class ItemUI : CustomUI
             realItemImage.rectTransform.sizeDelta = new Vector2(realItemImage.preferredWidth, realItemImage.preferredWidth);
         }
 
-        newBuyableItem.buyButton.onClick.AddListener(() =>
+        if (item.isDLCItem && !DecorationCategorization.canUseDlcItem(item.id))
         {
-            Player.Instance.Inventory.AddItem(item.id, 1, true);
-        });
+            newBuyableItem.buyButton.gameObject.SetActive(false);
+            newBuyableItem.buy5Button.gameObject.SetActive(false);
+            newBuyableItem.buy20Button.gameObject.SetActive(false);
+            newBuyableItem.transform.Find("Panel/BuyTMP").gameObject.SetActive(false);
+            newBuyableItem.qtyTMP.text = "<color=red>DLC required</color>";
+        }
+        else
+        {        
+            newBuyableItem.buyButton.onClick.AddListener(() =>
+            {
+                Player.Instance.Inventory.AddItem(item.id, 1, true);
+            });
 
-        newBuyableItem.buy5Button.onClick.AddListener(() =>
-        {
-            Player.Instance.Inventory.AddItem(item.id, 5, true);
-        });
+            newBuyableItem.buy5Button.onClick.AddListener(() =>
+            {
+                Player.Instance.Inventory.AddItem(item.id, 5, true);
+            });
 
-        newBuyableItem.buy20Button.onClick.AddListener(() =>
-        {
-            Player.Instance.Inventory.AddItem(item.id, 20, true);
-        });
-
+            newBuyableItem.buy20Button.onClick.AddListener(() =>
+            {
+                Player.Instance.Inventory.AddItem(item.id, 20, true);
+            });
+            
+        }
+        
+        
         newBuyableItem.itemToUseAsCurrency = null;
         newBuyableItem.coinsPrice = 0;
         newBuyableItem.ticketsPrice = 0;

@@ -8,7 +8,54 @@ namespace CreativeMode;
 public static class DecorationCategorization
 {
     private static List<int> _allItems;
-    
+
+    private static Dictionary<int, string> _dlcAssociation = new()
+    {
+        { ItemID.PirateAnchor, "SeasideDLC" },
+        { ItemID.PirateBed, "SeasideDLC" },
+        { ItemID.PirateCannon, "SeasideDLC" },
+        { ItemID.PirateChair, "SeasideDLC" },
+        { ItemID.PirateChest, "SeasideDLC" },
+        { ItemID.PirateHammock, "SeasideDLC" },
+        { ItemID.PirateTable, "SeasideDLC" },
+        { ItemID.PirateTreasureMap, "SeasideDLC" },
+        { ItemID.PirateWardrobe, "SeasideDLC" },
+        { ItemID.PirateWoodPost, "SeasideDLC" },
+        { ItemID.SeasideBed, "OceanShoreDLC" },
+        { ItemID.SeasideChair, "OceanShoreDLC" },
+        { ItemID.SeasideChest, "OceanShoreDLC" },
+        { ItemID.SeasideEndTable, "OceanShoreDLC" },
+        { ItemID.SeasideLamp, "OceanShoreDLC" },
+        { ItemID.SeasideTable, "OceanShoreDLC" },
+        { ItemID.SeasideWardrobe, "OceanShoreDLC" },
+        { ItemID.BlueSeasideShellRug, "OceanShoreDLC" },
+        { ItemID.BlueSeasideStarfishRug, "OceanShoreDLC" },
+        { ItemID.PinkSeasideShellRug, "OceanShoreDLC" },
+        { ItemID.PinkSeasideStarfishRug, "OceanShoreDLC" },
+        { ItemID.MushroomBed, "MushyDLC" },
+        { ItemID.MushroomBookshelf, "MushyDLC" },
+        { ItemID.MushroomCarpet, "MushyDLC" },
+        { ItemID.MushroomCoatRack, "MushyDLC" },
+        { ItemID.MushroomTable, "MushyDLC" },
+        { ItemID.MushroomEndTable, "MushyDLC" },
+        { ItemID.RedMushroomDecoration, "MushyDLC" },
+        { ItemID.LightBrownMushroomDecoration, "MushyDLC" },
+        { ItemID.Brimmy, "SpookyPetDLC" },
+        { ItemID.Webster, "SpookyPetDLC" },
+        { ItemID.Nevermore, "SpookyPetDLC" },
+        { ItemID.Noire, "SpookyPetDLC" },
+        { ItemID.Fangy, "SpookyPetDLC" },
+        { ItemID.Pips, "CutePetDLC" },
+        { ItemID.Chipper, "CutePetDLC" },
+        { ItemID.Pinkadee, "CutePetDLC" },
+        { ItemID.Ursil, "CutePetDLC" },
+        { ItemID.Sweetie, "CutePetDLC" },
+        { ItemID.Scuttles, "SeasideDLC" },
+        { ItemID.Sam, "SeasideDLC" },
+        { ItemID.Mips, "SeasideDLC" },
+        { ItemID.Booshroom, "MushyDLC" },
+    };
+
     public static DecorationCategory GetCategoryId(string name)
     {
         return CategoryNames.FirstOrDefault(c => c.Value.Equals(name)).Key;
@@ -22,6 +69,13 @@ public static class DecorationCategorization
         }
 
         var s = baseItems.Select(s => s);
+
+        if (!Plugin.ShowUnownedDLCItems.Value)
+        {
+            s = s.Select(i => new { id = i, ItemDatabase.GetItemData(i).isDLCItem })
+                .Where(arg => !arg.isDLCItem || DecorationCategorization.canUseDlcItem(arg.id))
+                .Select(arg => arg.id);
+        }
 
         if (!search.Equals(""))
         {
@@ -39,7 +93,11 @@ public static class DecorationCategorization
 
         return s.Skip(offset).Take(limit + 1).ToList();
     }
-    
+
+    public static bool canUseDlcItem(int itemId)
+    {
+        return _dlcAssociation.ContainsKey(itemId) && GameSave.Instance.GetProgressBoolCharacter(_dlcAssociation[itemId]);
+    }
 
     private static List<int> GetAllItems()
     {
@@ -160,6 +218,10 @@ public static class DecorationCategorization
                 ItemID.RegalBedCanopy,
                 ItemID.VineStrungHammock,
                 ItemID.BeachHammock,
+                ItemID.PirateBed,
+                ItemID.PirateHammock,
+                ItemID.SeasideBed,
+                ItemID.MushroomBed
             }
         },
         {
@@ -326,6 +388,8 @@ public static class DecorationCategorization
                 ItemID.WallCalendar,
                 ItemID.KnightsWallShield,
                 ItemID.WallCalendar,
+                ItemID.DangerPoster,
+                ItemID.NoSailingPoster,
             }
         },        
         {
@@ -355,6 +419,7 @@ public static class DecorationCategorization
         {
             DecorationCategory.MiscDecor, new List<int>()
             {
+                ItemID.MushroomCoatRack,
                 ItemID.MagazineStand,
                 ItemID.GrandfatherClock,
                 ItemID.FarmBarrel,
@@ -439,6 +504,42 @@ public static class DecorationCategorization
                 ItemID.MetalBucket,
                 ItemID.WoolCrate,
                 ItemID.SackofOats,
+                ItemID.SmallGroundHay,
+                ItemID.LargeGroundHay,
+                ItemID.FloralLadder,
+                ItemID.HayFilledWheelBarrow,
+                ItemID.OrangesFilledWheelbarrow,
+                ItemID.StandeeFilledHay,
+                ItemID.SpringAquarium,
+                ItemID.SummerAquarium,
+                ItemID.FallAquarium,
+                ItemID.WinterAquarium,
+                ItemID.NelVariAquarium,
+                ItemID.WithergateAquarium,
+                ItemID.CrateOfApples,
+                ItemID.EmptyCrate,
+                ItemID.EmptyWheelbarrow,
+                ItemID.FlowerPlanter,
+                ItemID.WithergateBarnArch,
+                ItemID.IronFeedingTrough,
+                ItemID.RedOilDrum,
+                ItemID.GreenOilDrum,
+                ItemID.BlueOilDrum,
+                ItemID.BarrelCluster,
+                ItemID.WormInfestedApples,
+                ItemID.ThornyPlanter,
+                ItemID.BiteyPlanter,
+                ItemID.PumpkinFilledWheelbarrow,
+                ItemID.OldScythe,
+                ItemID.EmptyPlanter,
+                ItemID.TShapedPipe,
+                ItemID.ThickGreenPipe,
+                ItemID.LineofPipes,
+                ItemID.NelVariBarnArch,
+                ItemID.HangingSpoolofRope,
+                ItemID.Rake,
+                ItemID.PirateAnchor,
+                ItemID.PirateCannon,
             }
         },
         {
@@ -507,11 +608,13 @@ public static class DecorationCategorization
                 ItemID.EmptyJar,
                 ItemID.PotionJar,
                 ItemID.HalloweenFence,
+                ItemID.PirateWardrobe,
             }
         },                   
         {
             DecorationCategory.Lighting, new List<int>()
             {
+                ItemID.SeasideLamp,
                 ItemID.CandyMushroomLight,
                 ItemID.SmallStoneFireplace,
                 ItemID.StoneLantern,
@@ -692,6 +795,10 @@ public static class DecorationCategorization
         {
             DecorationCategory.Rugs, new List<int>()
             {
+                ItemID.BlueSeasideShellRug,
+                ItemID.BlueSeasideStarfishRug,
+                ItemID.PinkSeasideShellRug,
+                ItemID.PinkSeasideStarfishRug,
                 ItemID.BlueBohoRoundRug,
                 ItemID.BlueCarpet,
                 ItemID.BlueFringeCarpet,
@@ -774,11 +881,13 @@ public static class DecorationCategorization
                 ItemID.PawPrintDoormat,
                 ItemID.RedCarpet,
                 ItemID.RedFringeCarpet,
+                ItemID.MushroomCarpet,
             }
         },
         {
             DecorationCategory.Seating, new List<int>()
             {
+                ItemID.SeasideChair,
                 ItemID.ApplePillow,
                 ItemID.BabyStool,
                 ItemID.GreenWoodenBench,
@@ -889,11 +998,13 @@ public static class DecorationCategorization
                 ItemID.ShinyLeatherSageStool,
                 ItemID.StumpStool,
                 ItemID.TealCraftersStool,
+                ItemID.PirateChair,
             }
         },          
         {
             DecorationCategory.Storage, new List<int>()
             {
+                ItemID.SeasideChest,
                 ItemID.Chest,
                 ItemID.WoodFlatheadChest,
                 ItemID.RedFlatheadChest,
@@ -921,11 +1032,17 @@ public static class DecorationCategorization
                 ItemID.GoldFridge,
                 ItemID.BunnyFridge,
                 ItemID.ModestTealFridge,
+                ItemID.PirateChest,
+                ItemID.SeasideWardrobe,
             }
         },          
         { 
             DecorationCategory.Surfaces, new List<int>()
             {
+                ItemID.MushroomTable,
+                ItemID.MushroomEndTable,
+                ItemID.SeasideTable,
+                ItemID.SeasideEndTable,
                 ItemID.CarvedElvenCoffeeTable,
                 ItemID.CarvedElvenRoundTable,
                 ItemID.PineDesk,
@@ -1010,11 +1127,17 @@ public static class DecorationCategorization
                 ItemID.LeafyCubby,
                 ItemID.MahoganyCounter,
                 ItemID.ClassicWoodenDresser,
+                ItemID.PirateTable,
+                ItemID.MushroomBookshelf
             }
         },
         {
             DecorationCategory.Clutter, new List<int>()
             {
+                ItemID.RedMushroomDecoration,
+                ItemID.LightBrownMushroomDecoration,
+                ItemID.MilkChurn,
+                ItemID.TinBucket,
                 ItemID.TrafficCone,
                 ItemID.OldStrawHat,
                 ItemID.JamJar,
@@ -1162,6 +1285,8 @@ public static class DecorationCategorization
                 ItemID.TealBook,
                 ItemID.WaterJug,
                 ItemID.WoodenPaintPalette,
+                ItemID.PirateTreasureMap,
+                ItemID.PirateWoodPost,
             }
         },          
         {
@@ -1195,7 +1320,6 @@ public static class DecorationCategorization
             DecorationCategory.Windows, new List<int>()
             {
                 ItemID.LargeWindow,
-                ItemID.BarnWindow,
                 ItemID.PinkStainedGlassWindow,
                 ItemID.RedTWindow,
                 ItemID.YellowTWindow,
@@ -1203,6 +1327,7 @@ public static class DecorationCategorization
                 ItemID.TallTreeWindow,
                 ItemID.WideTreeWindow,
                 ItemID.FlowerWindows,
+                ItemID.RusticElegantWindow,
             }
         },          
         {
@@ -1255,6 +1380,17 @@ public static class DecorationCategorization
                 ItemID.PatternedFloorTile,
                 ItemID.OakPlankFloorTile,
                 ItemID.WoodFloorTile,
+                ItemID.WoodFloorTile,
+                ItemID.StoneFloorTile,
+                ItemID.WorkshopFloorTile,
+                ItemID.FloorTile1,
+                ItemID.FloorTile2,
+                ItemID.FloorTile3,
+                ItemID.WoodenPlankFloorTile,
+                ItemID.BrickFloorTile,
+                ItemID.WhiteStoneFloorTile,
+                ItemID.PatternedFloorTile,
+                ItemID.OakPlankFloorTile,
             }
         },        
         {
@@ -1328,6 +1464,8 @@ public static class DecorationCategorization
                 ItemID.WoodenFenceGate,
                 ItemID.DeadwoodGate,
                 ItemID.HalloweenFence,
+                ItemID.WovenWoodFence,
+                ItemID.WovenWoodGate,
             }
         },
         {
@@ -1454,6 +1592,83 @@ public static class DecorationCategorization
                 ItemID.Werewolf,
                 ItemID.Pig,
                 ItemID.Snaccoon,
+                ItemID.RamberryBush,
+                ItemID.MooshroomCow,
+                ItemID.BabyPhoenix,
+                ItemID.FaeFox,
+                ItemID.Fishfrog,
+                ItemID.MetallicDragon,
+                ItemID.Sandworm,
+                ItemID.CementSlime,
+                ItemID.TarSlime,
+                ItemID.CrystalBat,
+                ItemID.SilkWyrm,
+                ItemID.Mimic,
+                ItemID.Ooey,
+                ItemID.Tilia,
+                ItemID.Axie,
+                ItemID.Myrtle,
+                ItemID.Gus,
+                ItemID.Sizzle,
+                ItemID.Bartleby,
+                ItemID.Revi,
+                ItemID.Pix,
+                ItemID.Kelsie,
+                ItemID.Pud,
+                ItemID.Wixxy,
+                ItemID.Graggle,
+                ItemID.Gayle,
+                ItemID.Darter,
+                ItemID.Grubby,
+                ItemID.Spirix,
+                ItemID.RedShiver,
+                ItemID.OrangeShiver,
+                ItemID.YellowShiver,
+                ItemID.GreenShiver,
+                ItemID.BlueShiver,
+                ItemID.PurpleShiver,
+                ItemID.PinkShiver,
+                ItemID.Octavius,
+                ItemID.OrangeBunny,
+                ItemID.GreyBunny,
+                ItemID.BrownBunny,
+                ItemID.BlackBunny,
+                ItemID.SpottedBunny,
+                ItemID.RedUnicorn,
+                ItemID.OrangeUnicorn,
+                ItemID.YellowUnicorn,
+                ItemID.GreenUnicorn,
+                ItemID.BlueUnicorn,
+                ItemID.PurpleUnicorn,
+                ItemID.PinkUnicorn,
+                ItemID.FlamingUnicorn,
+                ItemID.WhiteBuppy,
+                ItemID.BlackBuppy,
+                ItemID.SpottedBuppy,
+                ItemID.BrownBuppy,
+                ItemID.YellowSmolder,
+                ItemID.PurpleSmolder,
+                ItemID.BlackSmolder,
+                ItemID.WhiteSmolder,
+                ItemID.BlueSmolder,
+                ItemID.GreenSmolder,
+                ItemID.TealBubbles,
+                ItemID.BlueBubbles,
+                ItemID.PinkBubbles,
+                ItemID.FlameBubbles,
+                ItemID.RedKit,
+                ItemID.OrangeKit,
+                ItemID.YellowKit,
+                ItemID.GreenKit,
+                ItemID.PurpleKit,
+                ItemID.PinkKit,
+                ItemID.BlackKit,
+                ItemID.OrangePercy,
+                ItemID.GreenPercy,
+                ItemID.BluePercy,
+                ItemID.PurplePercy,
+                ItemID.PinkPercy,
+                ItemID.BlackPercy,
             }
         },        
         {
@@ -1486,6 +1701,8 @@ public static class DecorationCategorization
             {
                 ItemID.House,
                 ItemID.Barn,
+                ItemID.BasicShed,
+                ItemID.ElvenBarn,
                 ItemID.Tier2HouseUpgrade,
                 ItemID.Tier3HouseUpgrade,
                 ItemID.DemolitionKit,
@@ -1603,6 +1820,10 @@ public static class DecorationCategorization
         {
             DecorationCategory.Pets, new List<int>()
             {
+                ItemID.Scuttles,
+                ItemID.Sam,
+                ItemID.Mips,
+                ItemID.Booshroom,
                 ItemID.Buppy,
                 ItemID.Kitty,
                 ItemID.Bunny,
@@ -1612,8 +1833,8 @@ public static class DecorationCategorization
                 ItemID.Smolder,
                 ItemID.Nimbus,
                 ItemID.Grimbus,
-                ItemID.BabyTiger,
-                ItemID.BabyDragon,
+                //ItemID.BabyTiger, kickstarter
+                //ItemID.BabyDragon, kickstarter
                 ItemID.Unicorn,
                 ItemID.BlueberrySprinkles,
                 ItemID.MisterSlither,
@@ -1659,16 +1880,16 @@ public static class DecorationCategorization
                 ItemID.Leechums,
                 ItemID.Octonot,
                 ItemID.Skerbs,
-                //ItemID.Brimmy,
-                //ItemID.Webster,
-                //ItemID.Nevermore,
-                //ItemID.Noire,
-                //ItemID.Fangy,
-                //ItemID.Pips,
-                //ItemID.Chipper,
-                //ItemID.Pinkadee,
-                //ItemID.Ursil,
-                //ItemID.Sweetie,
+                ItemID.Brimmy,
+                ItemID.Webster,
+                ItemID.Nevermore,
+                ItemID.Noire,
+                ItemID.Fangy,
+                ItemID.Pips,
+                ItemID.Chipper,
+                ItemID.Pinkadee,
+                ItemID.Ursil,
+                ItemID.Sweetie,
                 ItemID.Buffo,
                 ItemID.Grimmy,
                 ItemID.Ollie,
@@ -1713,7 +1934,6 @@ public static class DecorationCategorization
                 ItemID.BlueShiver,
                 ItemID.PurpleShiver,
                 ItemID.PinkShiver,
-                ItemID.RomanHelmetShiver,
                 ItemID.OrangeBunny,
                 ItemID.GreyBunny,
                 ItemID.BrownBunny,
