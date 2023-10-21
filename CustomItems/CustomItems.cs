@@ -163,7 +163,7 @@ public class CustomItems
         item.icon = SpriteUtil.CreateSprite(File.ReadAllBytes(iconPath), $"Modded item icon {itemId}");
         
         Plugin.logger.LogDebug($"Created custom item {itemId} with name {item.name}");
-        ItemDatabase.items[item.id] = item;
+        ItemDatabase.itemDatas[item.id] = item;
         ItemDatabase.ids[item.name.RemoveWhitespace().ToLower()] = item.id;
 
         if (data.shopEntries is not null)
