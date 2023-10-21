@@ -73,7 +73,7 @@ public class Plugin : BaseUnityPlugin
         var txt = "";
         var dbg = "";
             
-        foreach (var i in ItemDatabase.items)
+        foreach (var i in ItemDatabase.itemDatas.Values)
         {
             if (i == null || i.useItem is null || DebugIgnoreItems.Contains(i.id))
             {

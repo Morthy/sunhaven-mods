@@ -1446,7 +1446,6 @@ public static class DecorationCategorization
                 ItemID.MonsterLoom,
                 ItemID.MonsterSeedMaker,
                 ItemID.MonsterFurnace,
-                ItemID.Keg,
                 ItemID.MonsterJuicer,
                 ItemID.MonsterCraftingTable,
                 ItemID.ElvenCraftingTable,

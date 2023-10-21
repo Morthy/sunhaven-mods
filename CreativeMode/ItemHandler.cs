@@ -32,7 +32,7 @@ public static class ItemHandler
         item.useItem = new GameObject("Decoration Catalogue Useable").AddComponent<DecorationCatalogue>();
         Object.DontDestroyOnLoad(item.useItem);
 
-        ItemDatabase.items[item.id] = item;
+        ItemDatabase.itemDatas[item.id] = item;
         ItemDatabase.ids[item.name.RemoveWhitespace().ToLower()] = item.id;
     }
     
