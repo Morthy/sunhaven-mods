@@ -16,16 +16,9 @@ public static class ItemHandler
     private const int LargeSprinklerId = 30012;
     private const int NelvariSprinklerId = 30013;
     private const int WithergateSprinklerId = 30014;
-
-    private static bool _itemsCreated = false;
+    
     private static void CreateSprinklerItem(int id, int range)
     {
-        if (ItemDatabase.GetItemData(id) && ItemDatabase.GetItemData(id).name != "Decoration Catalogue")
-        {
-            Plugin.logger.LogError($"Cannot create modded item with ID {id} because it is already in use by a different item.");
-            return;
-        }
-
         var original = ItemDatabase.GetItemData(BaseSprinklerId);
 
         if (!original)
@@ -36,6 +29,14 @@ public static class ItemHandler
 
         var item = ScriptableObject.CreateInstance<ItemData>();
         JsonUtility.FromJsonOverwrite(FileLoader.LoadFile(Assembly.GetExecutingAssembly(), $"data.{id}.json"), item);
+        
+        if (ItemDatabase.GetItemData(id) && !ItemDatabase.GetItemData(id).name.Equals(item.name))
+        {
+            Plugin.logger.LogError($"Cannot create modded item with ID {id} because it is already in use by a different item.");
+            return;
+        }
+
+        
         item.icon = SpriteUtil.CreateSprite(FileLoader.LoadFileBytes(Assembly.GetExecutingAssembly(), $"img.{id}.png"), $"Modded item icon {id}");
 
         var useItem = Object.Instantiate(original.useItem) as Placeable;
@@ -63,9 +64,12 @@ public static class ItemHandler
             Plugin.logger.LogError("Original sprinkler has no decoration of type Sprinkler");
             return;
         }
-        
-        useItem._decoration = sprinkler;
-        sprinkler.range = range;
+
+        var go = sprinkler.gameObject;
+        Object.Destroy(go.GetComponent<Sprinkler>());
+        var customSprinkler = go.AddComponent<CustomSprinkler>();
+        useItem._decoration = customSprinkler;
+        customSprinkler.range = range;
         
         var graphics = sprinkler.transform.Find("Graphics");
 
@@ -112,11 +116,6 @@ public static class ItemHandler
 
     public static void CreateSprinklerItems()
     {
-        if (_itemsCreated)
-        {
-            return;
-        }
-        
         CreateSprinklerItem(SmallSprinklerId, 1);
         CreateSprinklerItem(LargeSprinklerId, 2);
         CreateSprinklerItem(NelvariSprinklerId, 3);
@@ -145,7 +144,5 @@ public static class ItemHandler
             new() { item = ItemDatabase.GetItemData(ItemID.EnhancedMithrilBar), amount = 5 },
             new() { item = ItemDatabase.GetItemData(ItemID.RefinedGlass), amount = 1 }
         });
-        
-        _itemsCreated = true;
     }
 }

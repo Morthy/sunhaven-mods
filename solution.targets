@@ -65,6 +65,15 @@
         </Reference>        
         <Reference Include="Mirror">
             <HintPath>..\lib2\Mirror.dll</HintPath>
+        </Reference>        
+        <Reference Include="System.Core">
+            <HintPath>..\lib2\System.Core.dll</HintPath>
+        </Reference>       
+        <Reference Include="Assembly-CSharp">
+            <HintPath>..\lib2\Assembly-CSharp.dll</HintPath>
+        </Reference>
+        <Reference Include="SteamWorks">
+            <HintPath>..\lib2\com.rlabrecque.steamworks.net.dll</HintPath>
         </Reference>
     </ItemGroup>
 
@@ -78,7 +87,7 @@
     <!-- Copy to plugins folder and zip -->
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
         <ItemGroup>
-            <AllFiles Include="$(TargetDir)**\*.*" Exclude="$(TargetDir)**\*.pdb;$(TargetDir)**\Unity*;$(TargetDir)**\Sirenix*;$(TargetDir)**\SunHaven*;$(TargetDir)**\Zero*;$(TargetDir)**\DO*" />
+            <AllFiles Include="$(TargetDir)**\$(TargetName).dll" />
         </ItemGroup>
         <Copy SourceFiles="@(AllFiles)" DestinationFolder="$(GamePath)\BepInEx\plugins\%(RecursiveDir)"></Copy>
         <Delete Files="$(ProjectDir)\bin\$(TargetName).zip" />
