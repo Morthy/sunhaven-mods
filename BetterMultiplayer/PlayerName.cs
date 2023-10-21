@@ -10,7 +10,6 @@ namespace BetterMultiplayer;
 public class PlayerName : MonoBehaviour
 {
     private TextMeshProUGUI _playerNameText;
-    private Transform _chatBubble;
     private Player _player;
     private NetworkGamePlayer _netPlayer;
 
@@ -19,8 +18,7 @@ public class PlayerName : MonoBehaviour
         _playerNameText = transform.GetComponent<TextMeshProUGUI>();
         _netPlayer = netPlayer;
         _player = netPlayer.player;
-        _chatBubble = Traverse.Create(_player).Field("chatBubble").GetValue<Transform>();
-        
+
         gameObject.SetActive(true);
     }
     
@@ -28,6 +26,6 @@ public class PlayerName : MonoBehaviour
     {
         _playerNameText.enabled = Plugin.ShowPlayerNames.Value;
         _playerNameText.text = _netPlayer.playerName;
-        transform.localPosition = _chatBubble.gameObject.activeSelf ? new Vector3(0, 1, 0) : new Vector3(0, 0.21f, 0);
+        transform.localPosition = new Vector3(0, 0.4f, 0);
     }
 }

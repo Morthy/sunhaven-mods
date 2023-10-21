@@ -65,21 +65,26 @@ public class Plugin : BaseUnityPlugin
         {
             try
             {
-                if (__instance.player.transform.Find("Graphics/Layers/Player name"))
+                if (__instance.player.transform.Find("Graphics/Layers/ChatBubble/Player name"))
                 {
                     return;
                 }
-                
+
                 var layers = __instance.player.transform.Find("Graphics/Layers");
-                var playerName = Instantiate(layers.Find("ChatBubble"), layers);
+                var cb = layers.Find("ChatBubble");
+                var cbs = cb.GetComponent<ChatBubbleStack>();
+
+                var playerName = Instantiate(Traverse.Create(cbs).Field("notificationPrefab").GetValue<ChatBubble>().transform, cb);
                 playerName.name = "Player name";
                 Destroy(playerName.Find("Image").GetComponent<Image>());
+                playerName.GetComponent<Image>().color = new Color(0, 0, 0, 0);
+                playerName.transform.localPosition = new Vector3(0, -13.15f, 0);
 
-                var txt = playerName.Find("Image/Text (TMP)").GetComponent<TextMeshProUGUI>();
+                var txt = playerName.Find("Text (TMP)").GetComponent<TextMeshProUGUI>();
                 txt.color = Color.white;
                 txt.outlineColor = Color.black;
                 txt.fontSize = 0.45f;
-                
+
                 var component = txt.gameObject.AddComponent<PlayerName>();
                 component.Initialize(__instance);
                 
