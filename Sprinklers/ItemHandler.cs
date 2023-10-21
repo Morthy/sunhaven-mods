@@ -84,7 +84,7 @@ public static class ItemHandler
         Object.DontDestroyOnLoad(useItem);
         Object.DontDestroyOnLoad(sprinkler);
 
-        ItemDatabase.items[item.id] = item;
+        ItemDatabase.itemDatas[item.id] = item;
         ItemDatabase.ids[item.name.RemoveWhitespace().ToLower()] = item.id;
         Plugin.logger.LogDebug($"Created item {item.id} with name {item.name}");
     }
