@@ -91,16 +91,15 @@ public static class ItemHandler
 
     private static void AddItemToRecipeList(int id, string recipeList, List<ItemInfo> input)
     {
-        
         foreach (var rl in Resources.FindObjectsOfTypeAll<RecipeList>())
         {
             if (!rl.name.Equals(recipeList)) continue;
             
-            if (rl.craftingRecipes.Any(r => r.output.item.id == id))
+            if (rl.craftingRecipes.Any(r => r.output.item && r.output.item.id == id))
             {
                 return;
             }
-                
+
             var recipe = ScriptableObject.CreateInstance<Recipe>();
             recipe.output = new ItemInfo { item = ItemDatabase.GetItemData(id), amount = 1 };
             recipe.input = input;
@@ -108,7 +107,7 @@ public static class ItemHandler
             recipe.characterProgressTokens = new List<Progress>();
             recipe.questProgressTokens = new List<QuestAsset>();
             recipe.hoursToCraft = 1f;
-                
+
             rl.craftingRecipes.Add(recipe);
             Plugin.logger.LogDebug($"Added item {id} to {recipeList}");
         }
