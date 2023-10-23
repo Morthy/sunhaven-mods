@@ -628,7 +628,6 @@ namespace MuseumTracker
 
         private static void HandleSceneDecorations(int sceneId)
         {
-            logger.LogInfo($"Checking scene {sceneId}");
             if (!SingletonBehaviour<GameSave>.Instance.CurrentWorld.decorations.ContainsKey((short)sceneId))
             {
                 return;
@@ -649,7 +648,6 @@ namespace MuseumTracker
                     {
                         if (item.Item.ID() > 0)
                         {
-                            logger.LogInfo($"{decorationPositionData.id} {item.Item.ID()} {item.Amount}");
                             DonatedItems[(decorationPositionData.id, item.Item.ID())] = item.Amount;
                         }
                     }
@@ -677,16 +675,13 @@ namespace MuseumTracker
             // Remove current donation counts
             foreach (var itemID in Bundles[bundle.id].Keys)
             {
-                logger.LogInfo($"Remove {bundle.id} {itemID}");
                 DonatedItems.Remove((bundle.id, itemID));
             }
             
             foreach (var item in bundle.sellingInventory.Items)
             {
-                logger.LogInfo(item.id);
                 if (item.slot.itemToAccept.id > 0)
                 {
-                    logger.LogInfo(item.amount);
                     DonatedItems[(bundle.id, item.slot.itemToAccept.id)] = item.amount;
                 }
             }
