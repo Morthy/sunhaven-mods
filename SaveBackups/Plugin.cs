@@ -32,11 +32,14 @@ namespace SaveBackups
         {
             [HarmonyPostfix]
             [HarmonyPatch(typeof(GameSave), "WriteCharacterToFile")]
-            public static void WriteCharacterToFile(ref GameSave __instance, bool backup, bool newCharacter, string ___characterFolder, string ___fileExtension)
+            public static void WriteCharacterToFile(ref GameSave __instance, bool backup, bool newCharacter, string ___characterFolder)
             {
                 try
                 {
-                    if (!backup || newCharacter)
+
+                    var fileExtension = typeof(GameSave).GetField("fileExtension", BindingFlags.NonPublic | BindingFlags.Static)?.GetValue(null);
+                    
+                    if (!backup || fileExtension == null ||  newCharacter)
                     {
                         return;
                     }
@@ -61,7 +64,7 @@ namespace SaveBackups
                         Directory.CreateDirectory(dirPath);
                     }
 
-                    var path = dirPath + "/day" + gameSaveDay + "." + ___fileExtension;
+                    var path = dirPath + "/day" + gameSaveDay + "." + fileExtension;
                     if (File.Exists(path))
                     {
                         return;
@@ -72,7 +75,7 @@ namespace SaveBackups
                     File.WriteAllBytes(path, bytes);
                     
                     // Cleanup old saves
-                    foreach (string file in Directory.GetFiles(dirPath, "day*." + ___fileExtension, SearchOption.TopDirectoryOnly))
+                    foreach (string file in Directory.GetFiles(dirPath, "day*." + fileExtension, SearchOption.TopDirectoryOnly))
                     {
                         Match m = Regex.Match(file, @"day(\d+)\.");
 
