@@ -428,6 +428,7 @@ public static class DecorationCategorization
         {
             DecorationCategory.WallDisplays, new List<int>()
             {
+                ItemID.NeonSign,
                 ItemID.MiyeonsAmateurPainting,
                 ItemID.ElvenLoreTapestry,
                 ItemID.WallHangingNecklace,

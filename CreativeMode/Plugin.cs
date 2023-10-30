@@ -170,7 +170,7 @@ public class Plugin : BaseUnityPlugin
         public static void MainMenuControllerAwake()
         {
             ItemHandler.CreateDecorationCatalogueItem();
-            Debug();
+            //Debug();
         }
         
         [HarmonyPostfix]
@@ -181,9 +181,7 @@ public class Plugin : BaseUnityPlugin
             {
                 return;
             }
-            
-            logger.LogInfo("Creating new Item UI");
-                
+
             ItemUI = new GameObject("Item UI").AddComponent<ItemUI>();
             ItemUI.gameObject.SetActive(false);
             ItemUI.transform.SetParent(UIHandler.Instance.transform);
