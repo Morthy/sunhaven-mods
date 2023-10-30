@@ -34,6 +34,21 @@ public class Plugin : BaseUnityPlugin
         ItemID.FarmingSlotMaker,
         ItemID.HotChocolateMachine,
         ItemID.SnowConeMachine,
+        ItemID.BabyTiger,
+        ItemID.BabyDragon,
+        ItemID.WitchMineRock1x1,
+        ItemID.WitchMineRock2x2,
+        ItemID.PumpkinMineRock1x1,
+        ItemID.CandyMainMineRock1x1,
+        ItemID.CandyYellowMineRock,
+        ItemID.CandyBlueMineRock,
+        ItemID.CandyWhite0MineRock,
+        ItemID.CandyWhite1MineRock,
+        ItemID.CandyCornMineRockSm,
+        ItemID.CandyCornMineRockMed,
+        ItemID.CandyCornMineRockLrg,
+        ItemID.ArenaChest,
+        ItemID.WaterWheel,
     };
 
     public static ItemUI ItemUI;
@@ -87,7 +102,7 @@ public class Plugin : BaseUnityPlugin
 
             if (i.isDLCItem)
             {
-                itemName = itemName += "( DLC )";
+                itemName = itemName += " (DLC)";
             }
                 
             if (i.useItem is Placeable)
@@ -101,7 +116,7 @@ public class Plugin : BaseUnityPlugin
                     {
                         continue;
                     }
-                    //txt += $"{i.id},{itemName},ItemID.{name},{placeableType},{decorationType}," + DebugGetCategories(i.id) + "\n";
+                    txt += $"{i.id},{itemName},ItemID.{name},{placeableType},{decorationType}," + DebugGetCategories(i.id) + "\n";
                 }
 
             }
@@ -155,7 +170,7 @@ public class Plugin : BaseUnityPlugin
         public static void MainMenuControllerAwake()
         {
             ItemHandler.CreateDecorationCatalogueItem();
-            //Debug();
+            Debug();
         }
         
         [HarmonyPostfix]

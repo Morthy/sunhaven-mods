@@ -39,4 +39,5 @@ public enum DecorationCategory
     Pets = 34,
     Buildings = 35,
     Seeds = 36,
+    DLC = 37,
 }
