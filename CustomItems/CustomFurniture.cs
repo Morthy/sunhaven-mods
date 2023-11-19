@@ -118,11 +118,18 @@ public class CustomFurniture
             mg.Table(decoration.size.x-1); // i don't really know how to properly determine this but it kinda works
         }
 
-        var collider = decoration.gameObject.AddComponent<BoxCollider2D>();
-        collider.size = new Vector2(decoration.size.x / 6f, decoration.size.y / 6f);
-        collider.offset = new Vector2(collider.size.x / 2, collider.size.y / 2);
-        
-        
+        if (decoration.placeableAsRug)
+        {
+            mg.Table(0);
+        }
+
+        if (!decoration.placeableAsRug)
+        {
+            var collider = decoration.gameObject.AddComponent<BoxCollider2D>();
+            collider.size = new Vector2(decoration.size.x / 6f, decoration.size.y / 6f);
+            collider.offset = new Vector2(collider.size.x / 2, collider.size.y / 2);
+        }
+
         useItem._decoration = decoration;
         item.useItem = useItem;
         

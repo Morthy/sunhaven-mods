@@ -91,6 +91,8 @@ The item image (.png) can be any size, the game will modify it to fit within the
 
 You can extend a base custom item to make it act as furniture by adding additional fields to the item definition file.
 
+You must also add the **type** property to the definition and set it as "decoration", as in the example below.
+
 For furniture, the image you provide (e.g. 61000.png) will be what is displayed in the game world when the furniture is placed.
 
 Keep in mind that Sun Haven is a pixel based game and so will enlarge your image when rendered in-game. The furniture will be rendered at around 4x the actual image size.
@@ -113,6 +115,7 @@ A furniture definition looks like this. Note that not all decoration fields are 
   "ticketSellPrice": 300,
   "category": 1,
   "rarity": 1,
+  "type": "decoration",
   "decoration": {
     "size": [12, 12],
     "functionality": "table",
