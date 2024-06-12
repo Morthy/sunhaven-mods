@@ -48,6 +48,9 @@
         <Reference Include="SunHaven.Core">
             <HintPath>..\lib2\SunHaven.Core.dll</HintPath>
         </Reference>
+        <Reference Include="PSS">
+            <HintPath>..\lib2\PSS.Database.dll</HintPath>
+        </Reference>
         <Reference Include="UnityEngine.UI">
             <HintPath>..\lib2\UnityEngine.UI.dll</HintPath>
         </Reference>
