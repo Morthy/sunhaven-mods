@@ -53,10 +53,8 @@ namespace QuickMount
 
                 foreach (var slotItemData in __instance.Inventory.Items.Where(slotItemData => slotItemData.item != null && slotItemData.amount > 0))
                 {
-                    logger.LogInfo("get info");
                     Database.GetData<ItemData>(slotItemData.item.ID(), (itemData) =>
                     {
-                        logger.LogInfo("got info");
                         if (!found && itemData.useItem && itemData.useItem.GetType() == typeof(MountWhistle))
                         {
                             found = true;
@@ -72,8 +70,6 @@ namespace QuickMount
                         break;
                     }
                 }
-                    
-                logger.LogInfo("finished");
 
                 if (!found)
                 {
