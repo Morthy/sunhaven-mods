@@ -671,39 +671,18 @@ namespace MuseumTracker
             {
                 return;
             }
-            
+
             // Remove current donation counts
             foreach (var itemID in Bundles[bundle.id].Keys)
             {
                 DonatedItems.Remove((bundle.id, itemID));
             }
-            
+
             foreach (var item in bundle.sellingInventory.Items)
             {
-                if (item.slot.itemToAccept.id > 0)
+                if (item.item != null && item.item.ID() > 0)
                 {
-                    DonatedItems[(bundle.id, item.slot.itemToAccept.id)] = item.amount;
-                }
-            }
-            
-            // BC: remove old progress
-            foreach (SlotItemData slotItemData in bundle.sellingInventory.Items)
-            {
-                var gameSave = SingletonBehaviour<GameSave>.Instance;
-
-                string[] progressIds =
-                {
-                    GetProgressKey(bundle.bundleType, bundle.progressTokenWhenFull.progressID, slotItemData.slot.itemToAccept.id),
-                    GetProgressKey(bundle.bundleType, bundle.progressTokenWhenFull.progressID, slotItemData.slot.itemToAccept.id) + "_string"
-                };
-
-                foreach (var progressId in progressIds)
-                {
-                    if (gameSave.CurrentWorld.progress.ContainsKey(progressId.GetStableHashCode()))
-                    {
-
-                        gameSave.CurrentWorld.progress.Remove(progressId.GetStableHashCode());
-                    }
+                    DonatedItems[(bundle.id, item.item.ID())] = item.amount;
                 }
             }
         }
