@@ -6,6 +6,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using PSS;
 using UnityEngine;
 using Wish;
 
@@ -89,34 +90,34 @@ namespace WhatFishCanICatch
                     if (!Input.GetKey((KeyCode)Enum.Parse(typeof(KeyCode),_modifierKey.Value)))
                         return true;
 
-                    ItemData itemData = ItemDatabase.GetItemData(__instance.item);
-
-                    if (itemData.useItem && itemData.useItem.GetType() == typeof(FishingRod))
+                    Database.GetData<ItemData>(__instance.item.ID(), itemData =>
                     {
-                        var closest = FindObjectsOfType<FishSpawner>().OrderBy(spawner => Vector2.Distance(spawner.transform.position, Player.Instance.transform.position)).FirstOrDefault();
-
-                        if (!closest)
+                        if (itemData.useItem && itemData.useItem.GetType() == typeof(FishingRod))
                         {
-                            SingletonBehaviour<NotificationStack>.Instance.SendNotification("No fishing locations found");
-                            return false;
-                        }
+                            var closest = FindObjectsOfType<FishSpawner>().OrderBy(spawner => Vector2.Distance(spawner.transform.position, Player.Instance.transform.position)).FirstOrDefault();
 
-                        UIHandler.Instance.CloseExternalUI(_fishUI.gameObject);
+                            if (!closest)
+                            {
+                                SingletonBehaviour<NotificationStack>.Instance.SendNotification("No fishing locations found");
+                                return;
+                            }
+
+                            UIHandler.Instance.CloseExternalUI(_fishUI.gameObject);
                         
-                        closest.GetFish(); // Force currentFishSeason to be set
-                        var fishList = closest.currentFishSeason;
+                            closest.GetFish(); // Force currentFishSeason to be set
+                            var fishList = closest.currentFishSeason;
 
-                        var data = GetFishChancesFromFishData(fishList, Player.Instance.FishingSkill);
-                        data = (from entry in data orderby entry.Value descending select entry).ToDictionary(i => i.Key, i => i.Value);
+                            var data = GetFishChancesFromFishData(fishList, Player.Instance.FishingSkill);
+                            data = (from entry in data orderby entry.Value descending select entry).ToDictionary(i => i.Key, i => i.Value);
 
-                        _fishUI.ClearContent();
-                        _fishUI.Populate(data);
-
-                        UIHandler.Instance.OpenUI(_fishUI.gameObject, _fishUI.gameObject.transform.parent);
-                        return false;
-                    }
-
-                    return true;
+                            UIHandler.Instance.OpenUI(_fishUI.gameObject, _fishUI.gameObject.transform.parent);
+                            
+                            _fishUI.ClearContent();
+                            _fishUI.Populate(data);
+                        }
+                    });
+                    
+                    return false;
                 }
                 catch (Exception e)
                 {
@@ -133,7 +134,7 @@ namespace WhatFishCanICatch
                 {
                     return;
                 }
-                
+
                 _fishUI = new GameObject("What can I catch").AddComponent<FishUI>();
                 _fishUI.gameObject.SetActive(false);
                 _fishUI.transform.SetParent(UIHandler.Instance.transform);

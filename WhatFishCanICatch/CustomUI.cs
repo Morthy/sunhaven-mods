@@ -155,7 +155,9 @@ public class CustomUI : MonoBehaviour
 
     protected TextMeshProUGUI CreateText(Transform parent, string name)
     {
-        var text = Instantiate(Traverse.Create(UIHandler.Instance.endOfDayScreen).Field("coinsTotalTMP").GetValue<TextMeshProUGUI>(), parent);
+        var baseText = Traverse.Create(UIHandler.Instance.endOfDayScreen).Field("coinsTotalTMP").GetValue<TextMeshProUGUI>();
+        var text = Instantiate(baseText, parent);
+        text.alignment = TextAlignmentOptions.Left;
         text.gameObject.layer = LayerMask.NameToLayer("UI");
         text.name = name;
         return text;
@@ -163,7 +165,7 @@ public class CustomUI : MonoBehaviour
 
     protected Button CreateExitButton(Transform parent)
     {
-        var buttonTransform = Instantiate(Traverse.Create(UIHandler.Instance).Field("_inventoryUI").GetValue<GameObject>().transform.Find("ExitButton"), parent);
+        var buttonTransform = Instantiate(Traverse.Create(UIHandler.Instance).Field("_inventoryUI").GetValue<GameObject>().transform.Find("Inventory/ExitButton"), parent);
         buttonTransform.localPosition = new Vector3(110, 190, 0);
         return buttonTransform.gameObject.GetComponent<Button>();
     }
