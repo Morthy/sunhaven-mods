@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using PSS;
 using UnityEngine;
 using Wish;
 
@@ -30,6 +32,40 @@ namespace WhatItemsCanICraft
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} v{PluginInfo.PLUGIN_VERSION} is loaded!");
         }
 
+        public static IEnumerator GetRecipesUsingItem(ItemData item, Action<List<(ItemData, string)>> onDone)
+        {
+            if (_recipeLists.Length == 0)
+            {
+                _recipeLists = Resources.FindObjectsOfTypeAll<RecipeList>();
+            }
+            
+            var results = new List<(ItemData, string)>();
+            var count = 0;
+            
+            foreach (var rl in _recipeLists)
+            {
+                foreach (var r in rl.craftingRecipes.Where(r => r.input2.Any(i => i.id == item.id)))
+                {
+                    count++;
+                    Database.GetData<ItemData>(r.output2.id, data =>
+                    {
+                        results.Add((data, rl.name));
+                    });
+                    
+                    
+                }
+            }
+
+            while (count != results.Count)
+            {
+                yield return null;
+            }
+
+            results = results.OrderBy(i => i.Item1.name).ToList();
+            onDone(results);
+        }
+        
+        /*
         private static List<(ItemData, string)> GetRecipesUsingItem(ItemData item)
         {
             if (_recipeLists.Length == 0)
@@ -41,16 +77,16 @@ namespace WhatItemsCanICraft
             
             foreach (var rl in _recipeLists)
             {
-                foreach (var r in rl.craftingRecipes.Where(r => r.input.Any(i => i.item == item)))
+                foreach (var r in rl.craftingRecipes.Where(r => r.input2.Any(i => i.id == item.id)))
                 {
-                    results.Add((r.output.item, rl.name));
+                    results.Add((r.output2.id, rl.name));
                 }
             }
 
             results = results.OrderBy(i => i.Item1.name).ToList();
 
             return results;
-        }
+        }*/
         
 
         [HarmonyPatch]
@@ -65,30 +101,31 @@ namespace WhatItemsCanICraft
                     if (!Input.GetKey((KeyCode)Enum.Parse(typeof(KeyCode),_modifierKey.Value)))
                         return true;
 
-                    ItemData itemData = ItemDatabase.GetItemData(__instance.item);
-                    var craftables = GetRecipesUsingItem(itemData);
-
-                    if (craftables.Count > 0)
+                    Database.GetData<ItemData>(__instance.item.ID(), itemData =>
                     {
-                        _craftingUI.ClearContent();
-                        _craftingUI.Populate(craftables, itemData.name);
-
-                        if (UIHandler.InventoryOpen)
+                        Player.Instance.StartCoroutine(GetRecipesUsingItem(itemData, craftables =>
                         {
-                            UIHandler.Instance.CloseExternalUI();
-                            UIHandler.Instance.CloseInventory(false);
-                        }
+                            if (craftables.Count > 0)
+                            {
+                                if (UIHandler.InventoryOpen)
+                                {
+                                    UIHandler.Instance.CloseExternalUI();
+                                    UIHandler.Instance.CloseInventory(false);
+                                }
                         
-                        UIHandler.Instance.OpenUI(_craftingUI.gameObject, _craftingUI.gameObject.transform.parent);
-                        return false;
-                    }
-                    else
-                    {
-                        NotificationStack.Instance.SendNotification("<color=orange>Craftable Items</color>: You can't make anything using this!");
-                    }
+                                UIHandler.Instance.OpenUI(_craftingUI.gameObject, _craftingUI.gameObject.transform.parent);
+                                
+                                _craftingUI.ClearContent();
+                                _craftingUI.Populate(craftables, itemData.name);
+                            }
+                            else
+                            {
+                                NotificationStack.Instance.SendNotification("<color=orange>Craftable Items</color>: You can't make anything using this!");
+                            }
+                        }));
+                    });
 
-
-                    return true;
+                    return false;
                 }
                 catch (Exception e)
                 {

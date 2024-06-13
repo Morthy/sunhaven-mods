@@ -162,7 +162,7 @@ public class CustomUI : MonoBehaviour
 
     protected Button CreateExitButton(Transform parent)
     {
-        var buttonTransform = Instantiate(Traverse.Create(UIHandler.Instance).Field("_inventoryUI").GetValue<GameObject>().transform.Find("ExitButton"), parent);
+        var buttonTransform = Instantiate(Traverse.Create(UIHandler.Instance).Field("_inventoryUI").GetValue<GameObject>().transform.Find("Inventory/ExitButton"), parent);
         buttonTransform.localPosition = new Vector3(137, 190, 0);
         return buttonTransform.gameObject.GetComponent<Button>();
     }
