@@ -59,6 +59,7 @@ namespace QuickMount
                         {
                             found = true;
                                     
+                            itemData.useItem.SetItemData(itemData);
                             itemData.useItem.SetPlayer(Player.Instance);
                             itemData.useItem.UseDown1();
                                     
