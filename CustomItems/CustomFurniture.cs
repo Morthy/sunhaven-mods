@@ -44,7 +44,7 @@ public class CustomFurniture
             null => typeof(Decoration),
             "bed" => typeof(Bed),
             "table" => typeof(Table),
-            _ => typeof(Decoration)
+            _ => Type.GetType(functionality)
         };
     }
 

@@ -271,6 +271,11 @@ public class CustomItems
                 continue;
             }
             
+            foreach (var inputDefinition in entry.Value.inputs)
+            {
+                Database.GetData<ItemData>(inputDefinition.id, null);
+            }
+            
             var recipe = ScriptableObject.CreateInstance<Recipe>();
             recipe.worldProgressTokens = new List<Progress>();
             recipe.characterProgressTokens = new List<Progress>();
@@ -286,11 +291,10 @@ public class CustomItems
 
             foreach (var inputDefinition in entry.Value.inputs)
             {
-                Database.GetData<ItemData>(entry.Key, data =>
+                Database.GetData<ItemData>(inputDefinition.id, data =>
                 {
                     recipe.input2.Add(new SerializedItemDataNamedAmount() { id = inputDefinition.id, name = data.name, amount = inputDefinition.amount });
                 });
-
             }
 
             recipeList.craftingRecipes.Add(recipe);
