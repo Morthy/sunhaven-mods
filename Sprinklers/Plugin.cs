@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
+using PSS;
 using Wish;
+using ZeroFormatter;
 
 namespace Sprinklers;
 
 [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+[BepInDependency("CustomItems", "0.2.2")]
 public class Plugin : BaseUnityPlugin
 {
     private Harmony _harmony = new(PluginInfo.PLUGIN_GUID);
@@ -25,7 +29,7 @@ public class Plugin : BaseUnityPlugin
     private class Patches
     {
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(MainMenuController), "Awake")]
+        [HarmonyPatch(typeof(MainMenuController), "PlayGame", new Type[] {})]
         public static void MainMenuControllerAwake()
         {
             try
@@ -74,6 +78,33 @@ public class Plugin : BaseUnityPlugin
             }
 
             return true;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(GameManager), "UpdateDecorationsOvernight", new []{ typeof(DecorationUpdateType)})]
+        public static void GameManagerUpdateDecorationsOvernight(DecorationUpdateType updateType)
+        {
+            if (updateType != DecorationUpdateType.Late1)
+            {
+                return;
+            }
+            
+            foreach (KeyValuePair<short, Dictionary<KeyTuple<ushort, ushort, sbyte>, DecorationPositionData>> decoration in SingletonBehaviour<GameSave>.Instance.CurrentWorld.Decorations)
+            {
+                foreach (KeyValuePair<KeyTuple<ushort, ushort, sbyte>, DecorationPositionData> keyValuePair in decoration.Value)
+                {
+                    DecorationPositionData decorationPositionData = keyValuePair.Value;
+                    int id = keyValuePair.Value.id;
+
+                    if (id is not (ItemHandler.SmallSprinklerId or ItemHandler.LargeSprinklerId or ItemHandler.NelvariSprinklerId or ItemHandler.WithergateSprinklerId))
+                    {
+                        continue;
+                    }
+                    
+                    CustomSprinkler.SprinkleSprinkle(ref decorationPositionData);
+                }
+            }
+
         }
     }
 }
