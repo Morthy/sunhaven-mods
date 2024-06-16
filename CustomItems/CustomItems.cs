@@ -6,7 +6,9 @@ using System.Reflection;
 using Morthy.Util;
 using UnityEngine;
 using Wish;
-using fastJSON;
+using HarmonyLib;
+using PSS;
+using TinyJson;
 using Object = UnityEngine.Object;
 
 namespace CustomItems;
@@ -27,19 +29,42 @@ public class CustomItems
         "rarity",
     };
 
-    public static Dictionary<string, List<ShopItemInfo>> MerchantAdditions = new ();
-    private static RecipeList[] _recipeLists = { };
+    private static Dictionary<int, ItemData> ItemDB = new();
+    private static Dictionary<string, int> ItemNames = new();
 
+    public static Dictionary<string, List<ShopItemInfo2>> MerchantAdditions = new ();
+    public static Dictionary<string, Dictionary<int, RecipeDefinition>> RecipeAdditions = new();
+
+    public static bool HasCustomItemWithID(int id)
+    {
+        return ItemDB.ContainsKey(id);
+    }
+
+    public static int? IDForCustomItemName(string name)
+    {
+        if (ItemNames.TryGetValue(name, out int r))
+        {
+            return r;
+        }
+
+        return null;
+    }
+    
+    public static ItemData GetCustomItem(int id)
+    {
+        return ItemDB[id];
+    }
+    
     public static void AddItems()
     {
         MerchantAdditions.Clear();
         
-        foreach (var path in GetItemDefinitionPaths(""))
+        foreach (var path in GetItemDefinitionPaths())
         {
             try
             {
-                var definition = new ItemDefinition();
-                JSON.FillObject(definition, File.ReadAllText(path));
+                var json = File.ReadAllText(path);
+                var definition = json.FromJson<ItemDefinition>();
 
                 var folder = Path.GetDirectoryName(path);
 
@@ -58,9 +83,9 @@ public class CustomItems
                 Plugin.logger.LogError(e);
             }
         }
-
-        ItemDatabase.GetItemData(30019).useItem = new GameObject("Scrubber Useable").AddComponent<DecorationScrubber>();
-        Object.DontDestroyOnLoad(ItemDatabase.GetItemData(30019).useItem);
+        
+        GetCustomItem(61000).useItem = new GameObject("Scrubber Useable").AddComponent<DecorationScrubber>();
+        Object.DontDestroyOnLoad(GetCustomItem(61000).useItem);
     }
 
     public static void AddItemsToShops()
@@ -77,12 +102,12 @@ public class CustomItems
                     return;
                 }
                 
-                if (table.startingItems.Exists(i => i.item.id == info.item.id))
+                if (table.startingItems2.Exists(i => i.id == info.id))
                 {
                     return;
                 }
                 
-                table.startingItems.Add(info);
+                table.startingItems2.Add(info);
             }
         }
     }
@@ -91,13 +116,13 @@ public class CustomItems
     {
         if (!MerchantAdditions.ContainsKey(definition.shop))
         {
-            MerchantAdditions.Add(definition.shop, new List<ShopItemInfo>());
+            MerchantAdditions.Add(definition.shop, new List<ShopItemInfo2>());
         }
 
-        var info = new ShopItemInfo()
+        var info = new ShopItemInfo2()
         {
             amount = definition.amount,
-            item = item,
+            id = item.id,
             price = definition.costGold,
             orbs = definition.costOrbs,
             tickets = definition.costTickets,
@@ -126,6 +151,13 @@ public class CustomItems
         }
     }
 
+    private static bool IsExistingInternalItem(int itemId)
+    {
+        var ids = Traverse.Create(Database.Instance).Field("validIDs").GetValue<HashSet<int>>();
+
+        return ids.Contains(itemId);
+    }
+
     public static ItemData CreateItem(string folder, ItemDefinition data)
     {
         var item = ScriptableObject.CreateInstance<ItemData>();
@@ -149,22 +181,39 @@ public class CustomItems
         
         var itemId = item.id;
 
-        if (ItemDatabase.GetItemData(itemId) && !ItemDatabase.GetItemData(itemId).name.Equals(item.name))
+        if (IsExistingInternalItem(item.id))
         {
-            throw new Exception($"Failed to create modded item with ID {itemId} because an existing item exists with that ID.");
+            throw new Exception($"Failed to create modded item with ID {itemId} because the ID is in use by Sun Haven itself.");
+        }
+
+        if (HasCustomItemWithID(item.id) && !GetCustomItem(itemId).name.Equals(item.name))
+        {
+            throw new Exception($"Failed to create modded item with ID {itemId} because an existing modded item exists with that ID.");
         }
         
-        var iconPath = GetFilePath(Path.Combine(folder, $"{itemId}.png"));
+        var iconPath = GetFilePath(Path.Combine(folder, data.image ?? $"{itemId}.png"));
         if (!File.Exists(iconPath))
         {
             throw new Exception($"Failed to create modded item with ID {itemId} because {iconPath} does not exist.");
         }
-        
+
         item.icon = SpriteUtil.CreateSprite(File.ReadAllBytes(iconPath), $"Modded item icon {itemId}");
-        
+        ItemDB[item.id] = item;
+        ItemNames[item.name.RemoveWhitespace().ToLower()] = item.id;
+        SingletonBehaviour<ItemInfoDatabase>.Instance.allItemSellInfos[item.id] = new ItemSellInfo()
+        {
+            name = item.name,
+            keyName = item.name,
+            sellPrice = item.sellPrice,
+            orbSellPrice = item.orbsSellPrice,
+            ticketSellPrice = item.ticketSellPrice,
+            stackSize = item.stackSize,
+            isMeal = false,
+            rarity = item.rarity,
+            decorationType = item.decorationType,
+        };
+
         Plugin.logger.LogDebug($"Created custom item {itemId} with name {item.name}");
-        ItemDatabase.itemDatas[item.id] = item;
-        ItemDatabase.ids[item.name.RemoveWhitespace().ToLower()] = item.id;
 
         if (data.shopEntries is not null)
         {
@@ -178,7 +227,14 @@ public class CustomItems
         {
             foreach (var entry in data.recipes)
             {
-                AddItemToRecipeList(item, entry);
+                if (!RecipeAdditions.ContainsKey(entry.list))
+                {
+                    RecipeAdditions[entry.list] = new Dictionary<int, RecipeDefinition>();
+                }
+
+                RecipeAdditions[entry.list][item.id] = entry;
+                Plugin.logger.LogDebug($"Registered {item.name} to be added to crafting table {entry.list}");
+                
             }
         }
         
@@ -190,68 +246,54 @@ public class CustomItems
         return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new InvalidOperationException(), path);
     }
     
-    private static IEnumerable<string> GetItemDefinitionPaths(string folder)
+    private static IEnumerable<string> GetItemDefinitionPaths()
     {
-        return Directory.GetFiles(GetFilePath(folder), "*.json", SearchOption.AllDirectories);
+        var customItemsFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+        var one = Directory.GetFiles(customItemsFolder!, "*.json", SearchOption.AllDirectories);
+        var two  = Directory.GetFiles(Path.Combine(customItemsFolder, ".."), "*.item.json", SearchOption.AllDirectories);
+        return one.Concat(two).ToArray();
     }
-    
-    private static void AddItemToRecipeList(ItemData item, RecipeDefinition recipeDefinition)
+
+    public static void AddItemsToRecipeList(CraftingTable table)
     {
-        if (_recipeLists.Length == 0)
+        var recipeList = Traverse.Create(table).Field("recipeList").GetValue<RecipeList>();
+        
+        if (recipeList == null || !RecipeAdditions.ContainsKey(recipeList.name))
         {
-            _recipeLists = Resources.FindObjectsOfTypeAll<RecipeList>();
+            return;
         }
 
-        foreach (var rl in _recipeLists)
+        foreach (var entry in RecipeAdditions[recipeList.name])
         {
-            if (!rl.name.Equals(recipeDefinition.list)) continue;
-            
-            if (rl.craftingRecipes.Any(r => r.output.item.id == item.id))
+            if (recipeList.craftingRecipes.Any(r => r.output2.id == entry.Key))
             {
-                return;
+                continue;
             }
             
             var recipe = ScriptableObject.CreateInstance<Recipe>();
-            recipe.output = new ItemInfo { item = item, amount = 1 };
-            recipe.input = recipeDefinition.inputs.Select(inputDefinition => new ItemInfo() { item = ItemDatabase.GetItemData(inputDefinition.id), amount = inputDefinition.amount }).ToList();
             recipe.worldProgressTokens = new List<Progress>();
             recipe.characterProgressTokens = new List<Progress>();
             recipe.questProgressTokens = new List<QuestAsset>();
-            recipe.hoursToCraft = recipeDefinition.hours;
-                
-            rl.craftingRecipes.Add(recipe);
-            Plugin.logger.LogDebug($"Added item {item.id} to {recipeDefinition.list}");
-        }
-    }
-
-    public static void RemoveNonExistingDecorations(GameSave save)
-    {
-        var watch = new System.Diagnostics.Stopwatch();
-        watch.Start();
-
-        var remove = new Dictionary<Vector3Int, short>();
-        
-        foreach (var scene in save.CurrentWorld.decorations)
-        {
-            foreach (var decoration in scene.Value.Where(decoration => ItemDatabase.GetItemData(decoration.Value.id) == null))
+            recipe.hoursToCraft = entry.Value.hours;
+            
+            Database.GetData<ItemData>(entry.Key, data =>
             {
-                if (decoration.Value.id > 0)
-                {
-                    Plugin.logger.LogDebug($"Removing decoration with ID {decoration.Value.id} from scene {scene.Key}");
-                    remove.Add(new Vector3Int(decoration.Value.x, decoration.Value.y, decoration.Value.z), scene.Key);
-                }
-                else
-                {
-                    //Plugin.logger.LogDebug($"Found decoration with ID {decoration.Value.id} from scene {scene.Key}");
-                }
-            }
-        }
+                recipe.output2 = new SerializedItemDataNamedAmount() { id = entry.Key, name = data.name, amount = 1 };
+            });
 
-        foreach (var dec in remove)
-        {
-            save.RemoveDecorationFromSave(dec.Key, dec.Value);
+            recipe.input2 = new List<SerializedItemDataNamedAmount>();
+
+            foreach (var inputDefinition in entry.Value.inputs)
+            {
+                Database.GetData<ItemData>(entry.Key, data =>
+                {
+                    recipe.input2.Add(new SerializedItemDataNamedAmount() { id = inputDefinition.id, name = data.name, amount = inputDefinition.amount });
+                });
+
+            }
+
+            recipeList.craftingRecipes.Add(recipe);
         }
-        
-        Plugin.logger.LogInfo($"Checked for defunct decorations in {watch.ElapsedMilliseconds}ms");
     }
 }

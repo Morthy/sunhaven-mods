@@ -53,10 +53,13 @@
         </Reference>
         <Reference Include="UnityEngine.UI">
             <HintPath>..\lib2\UnityEngine.UI.dll</HintPath>
+        </Reference>        
+        <Reference Include="Unity.ResourceManager">
+            <HintPath>..\lib2\Unity.ResourceManager.dll</HintPath>
         </Reference>
         <Reference Include="Unity.TextMeshPro">
             <HintPath>..\lib2\Unity.TextMeshPro.dll</HintPath>
-        </Reference>        
+        </Reference>
         <Reference Include="ZeroFormatter">
             <HintPath>..\lib2\ZeroFormatter.dll</HintPath>
         </Reference>        

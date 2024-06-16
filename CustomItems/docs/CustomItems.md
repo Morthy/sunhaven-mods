@@ -32,12 +32,20 @@ In the beta versions, the mod may not gracefully handle all errors and so you mi
 
 ## Creating a base item
 
-Items are added by creating a JSON definition file and providing a .png image. Both files should be named using the item ID you've chosen. As an example:
+Items are added by creating a JSON definition file and providing a .png image. The .json file can be named however you wish. By default, plugin will take the item ID of the item you're creating, and load a .png image with that name from the same folder.
 
-* 61000.json
-* 61000.png
+E.g. If you are creating an item ID 61000, it will try load 61000.png
 
-Any .json file in the CustomItems folder will be considered, but I recommend creating all items for your mod in your own folder within CustomItems. Your directory structure could look like this:
+Alternatively, you can add an "image" key to your .json file and provide a custom image name which will be loaded.
+
+The mod will load:
+
+* Any .json file in the CustomItems folder or folders within.
+* Any .item.json file in the Plugins folder or folders within.
+
+This means you can either create your items in for example plugins/CustomItems/MyModName and call them xyz.json
+*or*
+create them in Plugins/MyModName and call them xyz.item.json.
 
 ```
 plugins/CustomItems/
@@ -53,6 +61,7 @@ Your item definition file (.json) requires at minimum the following information:
 {
   "id": 61000,
   "name": "My custom item",
+  "image": "omg.png",
   "description": "It does custom things",
   "helpDescription": "",
   "useDescription": "(Left click to place)",

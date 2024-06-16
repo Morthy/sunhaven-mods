@@ -9,6 +9,7 @@ public class ItemDefinition
     public int id;
     public string type;
     public string name;
+    [CanBeNull] public string image;
     public string description;
     public string useDescription;
     public string helpDescription;

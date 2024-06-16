@@ -2,6 +2,7 @@
 using System.IO;
 using JetBrains.Annotations;
 using Morthy.Util;
+using PSS;
 using UnityEngine;
 using Wish;
 using Object = UnityEngine.Object;
@@ -17,8 +18,7 @@ public class CustomFurniture
         "placeableOnWalls",
         "placeableAsRug",
     };
-    
-    
+
     private static void ValidateItemData(ItemDefinition definition)
     {
         if (definition.decoration == null)
@@ -77,7 +77,7 @@ public class CustomFurniture
         
         var useItem = new GameObject(item.name + " Placeable").AddComponent<Placeable>();
         useItem.gameObject.SetActive(false);
-        useItem._previewSprite = SpriteUtil.CreateSpriteDecoration(File.ReadAllBytes(Path.Combine(folder, $"{item.id}.png")), $"{item.name} Decoration");
+        useItem._previewSprite = SpriteUtil.CreateSpriteDecoration(File.ReadAllBytes(Path.Combine(folder, definition.image ?? $"{item.id}.png")), $"{item.name} Decoration");
         useItem._itemData = item;
         Object.DontDestroyOnLoad(useItem);
 
@@ -110,31 +110,34 @@ public class CustomFurniture
         graphics.AddComponent<MeshFilter>();
         var mg = graphics.AddComponent<MeshGenerator>();
         
-        mg.shader = (ItemDatabase.GetItemData(ItemID.CowPlushie).useItem as Placeable)?.Decoration.transform.Find("Graphics").GetComponent<MeshGenerator>().shader;
-        mg.sprite = useItem._previewSprite;
-        mg.SetDefault();
-        if (decoration is Table)
+        Database.GetData<ItemData>(ItemID.CowPlushie, example =>
         {
-            mg.Table(decoration.size.x-1); // i don't really know how to properly determine this but it kinda works
-        }
+            mg.shader = (example.useItem as Placeable)?.Decoration.transform.Find("Graphics").GetComponent<MeshGenerator>().shader;
+            mg.sprite = useItem._previewSprite;
+            mg.SetDefault();
+            if (decoration is Table)
+            {
+                mg.Table(decoration.size.x-1); // i don't really know how to properly determine this but it kinda works
+            }
 
-        if (decoration.placeableAsRug)
-        {
-            mg.Table(0);
-        }
+            if (decoration.placeableAsRug)
+            {
+                mg.Table(0);
+            }
 
-        if (!decoration.placeableAsRug)
-        {
-            var collider = decoration.gameObject.AddComponent<BoxCollider2D>();
-            collider.size = new Vector2(decoration.size.x / 6f, decoration.size.y / 6f);
-            collider.offset = new Vector2(collider.size.x / 2, collider.size.y / 2);
-        }
+            if (!decoration.placeableAsRug)
+            {
+                var collider = decoration.gameObject.AddComponent<BoxCollider2D>();
+                collider.size = new Vector2(decoration.size.x / 6f, decoration.size.y / 6f);
+                collider.offset = new Vector2(collider.size.x / 2, collider.size.y / 2);
+            }
 
-        useItem._decoration = decoration;
-        item.useItem = useItem;
+            useItem._decoration = decoration;
+            item.useItem = useItem;
         
-        decoration.gameObject.SetActive(true);
-        
+            decoration.gameObject.SetActive(true);
+        });
+
         return item;
     }
 }
