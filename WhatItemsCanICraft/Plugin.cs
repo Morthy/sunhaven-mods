@@ -18,9 +18,14 @@ namespace WhatItemsCanICraft
         private Harmony harmony = new Harmony(PluginInfo.PLUGIN_GUID);
         public static ManualLogSource logger;
         private static CraftingUI _craftingUI;
-        private static RecipeList[] _recipeLists = { };
+        private static List<RecipeList> _recipeLists = new();
         private static ConfigEntry<string> _modifierKey;
-        private static int _originalExternalUISiblingIndex;
+
+        private static int[] _craftingTables = {
+            9351, 9353, 9356, 9359, 10684, 10689, 10703, 9350, 9352, 9355, 9357, 9354, 10317, 10465, 10464, 10537, 10574, 10687, 10686, 10685, 10690, 10683, 10688, 10691, 10702, 10704, 10705, 10707, 10700, 10708, 10701, 10706, 10709, 10711, 10710, 10721,
+            10725, 10716, 10717, 10724, 10715, 10713, 10712, 10718, 10714, 10723, 10720, 10726, 10722, 10727, 10728, 10738, 10864, 10867, 10868, 10866, 10890, 10891, 10892, 10923
+        };
+        
 
         private void Awake()
         {            
@@ -32,13 +37,80 @@ namespace WhatItemsCanICraft
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} v{PluginInfo.PLUGIN_VERSION} is loaded!");
         }
 
-        public static IEnumerator GetRecipesUsingItem(ItemData item, Action<List<(ItemData, string)>> onDone)
+        public static IEnumerator DetermineCraftingTables(Action<List<int>> onDone)
         {
-            if (_recipeLists.Length == 0)
+            
+            var count = SingletonBehaviour<ItemInfoDatabase>.Instance.allDecorations.Count;
+            var ids = new List<int>();
+            var done = 0;
+            
+            foreach (var id in SingletonBehaviour<ItemInfoDatabase>.Instance.allDecorations)
             {
-                _recipeLists = Resources.FindObjectsOfTypeAll<RecipeList>();
+                Database.GetData<ItemData>(id, data =>
+                {
+                    if ((object)data.useItem != null && data.useItem is Placeable { Decoration: CraftingTable })
+                    {
+                        ids.Add(data.id);
+                        logger.LogInfo(data.name);
+                    }
+
+                    done++;
+                });
+            }
+
+            while (count != done)
+            {
+                yield return null;
             }
             
+            onDone(ids);
+        }
+        
+        public static IEnumerator LoadAllRecipes(Action onDone)
+        {
+            if (_recipeLists.Count > 0)
+            {
+                onDone();
+                yield break;
+            }
+            
+            NotificationStack.Instance.SendNotification("Loading all recipes... (this may take a few seconds)");
+            var done = 0;
+            
+            foreach (var id in  _craftingTables)
+            {
+                logger.LogDebug($"Crafting table {id}");
+                Database.GetData<ItemData>(id, data =>
+                {
+                    var table = ((Placeable)data.useItem)._decoration as CraftingTable;
+                    var recipeList = Traverse.Create(table).Field("recipeList").GetValue<RecipeList>();
+
+                    if (recipeList)
+                    {
+                        _recipeLists.Add(recipeList);
+                        logger.LogDebug($"Added {recipeList.craftingRecipes.Count} recipes");
+                    }
+                    else
+                    {
+                        logger.LogDebug($"Added 0 recipes");
+                    }
+
+                    done++;
+                });
+            }
+
+            while (_craftingTables.Length != done)
+            {
+                yield return null;
+            }
+
+            _recipeLists = _recipeLists.GroupBy(r => r.name).Select(r => r.First()).ToList();
+            
+            onDone();
+        }
+
+        public static IEnumerator GetRecipesUsingItem(ItemData item, Action<List<(ItemData, string)>> onDone)
+        {
             var results = new List<(ItemData, string)>();
             var count = 0;
             
@@ -51,8 +123,6 @@ namespace WhatItemsCanICraft
                     {
                         results.Add((data, rl.name));
                     });
-                    
-                    
                 }
             }
 
@@ -64,30 +134,6 @@ namespace WhatItemsCanICraft
             results = results.OrderBy(i => i.Item1.name).ToList();
             onDone(results);
         }
-        
-        /*
-        private static List<(ItemData, string)> GetRecipesUsingItem(ItemData item)
-        {
-            if (_recipeLists.Length == 0)
-            {
-                _recipeLists = Resources.FindObjectsOfTypeAll<RecipeList>();
-            }
-
-            var results = new List<(ItemData, string)>();
-            
-            foreach (var rl in _recipeLists)
-            {
-                foreach (var r in rl.craftingRecipes.Where(r => r.input2.Any(i => i.id == item.id)))
-                {
-                    results.Add((r.output2.id, rl.name));
-                }
-            }
-
-            results = results.OrderBy(i => i.Item1.name).ToList();
-
-            return results;
-        }*/
-        
 
         [HarmonyPatch]
         class Patches
@@ -100,30 +146,42 @@ namespace WhatItemsCanICraft
                 {
                     if (!Input.GetKey((KeyCode)Enum.Parse(typeof(KeyCode),_modifierKey.Value)))
                         return true;
-
-                    Database.GetData<ItemData>(__instance.item.ID(), itemData =>
+                    
+                    /*
+                    Player.Instance.StartCoroutine(DetermineCraftingTables((ids) =>
                     {
-                        Player.Instance.StartCoroutine(GetRecipesUsingItem(itemData, craftables =>
+                        logger.LogInfo(String.Join(", ", ids.ToArray()));
+                    }));
+
+                    return false;
+                    */
+
+                    Player.Instance.StartCoroutine(LoadAllRecipes(() =>
+                    {
+                        Database.GetData<ItemData>(__instance.item.ID(), itemData =>
                         {
-                            if (craftables.Count > 0)
+                            Player.Instance.StartCoroutine(GetRecipesUsingItem(itemData, craftables =>
                             {
-                                if (UIHandler.InventoryOpen)
+                                if (craftables.Count > 0)
                                 {
-                                    UIHandler.Instance.CloseExternalUI();
-                                    UIHandler.Instance.CloseInventory(false);
-                                }
+                                    if (UIHandler.InventoryOpen)
+                                    {
+                                        UIHandler.Instance.CloseExternalUI();
+                                        UIHandler.Instance.CloseInventory(false);
+                                    }
                         
-                                UIHandler.Instance.OpenUI(_craftingUI.gameObject, _craftingUI.gameObject.transform.parent);
+                                    UIHandler.Instance.OpenUI(_craftingUI.gameObject, _craftingUI.gameObject.transform.parent);
                                 
-                                _craftingUI.ClearContent();
-                                _craftingUI.Populate(craftables, itemData.name);
-                            }
-                            else
-                            {
-                                NotificationStack.Instance.SendNotification("<color=orange>Craftable Items</color>: You can't make anything using this!");
-                            }
-                        }));
-                    });
+                                    _craftingUI.ClearContent();
+                                    _craftingUI.Populate(craftables, itemData.name);
+                                }
+                                else
+                                {
+                                    NotificationStack.Instance.SendNotification("<color=orange>Craftable Items</color>: You can't make anything using this!");
+                                }
+                            }));
+                        });
+                    }));
 
                     return false;
                 }
