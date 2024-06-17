@@ -16,7 +16,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BanishSnaccoons", "BanishSn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickMount", "QuickMount\QuickMount.csproj", "{8BE92269-F8AB-446B-A2A2-353165FB1321}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HDTextures", "HDTextures\HDTextures.csproj", "{47EB2DDE-694D-444D-839B-0B4A3692CFE8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomPortraits", "CustomPortraits\CustomPortraits.csproj", "{47EB2DDE-694D-444D-839B-0B4A3692CFE8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickCastSpells", "QuickCastSpells\QuickCastSpells.csproj", "{05573225-A14D-41EF-8148-4441438FA9CF}"
 EndProject
