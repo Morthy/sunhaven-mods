@@ -76,34 +76,41 @@ namespace CustomTextures
                 return;
             }
             //Dbgl($"Loaded {itemID}");
-            
-            Database.GetData<ItemData>(itemID, (item) =>
+            try
             {
-                item.icon = TryGetReplacementSprite(item.icon);
 
-                if (!item.useItem || !(item.useItem is Placeable placeable)) return;
-
-
-                if (placeable._previewSprite)
+                Database.GetData<ItemData>(itemID, (item) =>
                 {
-                    placeable._previewSprite = TryGetReplacementSprite(placeable._previewSprite);
-                }
+                    item.icon = TryGetReplacementSprite(item.icon);
 
-                if (placeable._secondaryPreviewSprite)
-                {
-                    placeable._secondaryPreviewSprite = TryGetReplacementSprite(placeable._secondaryPreviewSprite);
-                }
+                    if (!item.useItem || !(item.useItem is Placeable placeable)) return;
 
-                if (!placeable._decoration) return;
 
-                foreach (var childGenerator in placeable._decoration.GetComponentsInChildren<MeshGenerator>())
-                {
-                    if (childGenerator && childGenerator.sprite)
+                    if (placeable._previewSprite)
                     {
-                        childGenerator.sprite = TryGetReplacementSprite(childGenerator.sprite);
+                        placeable._previewSprite = TryGetReplacementSprite(placeable._previewSprite);
                     }
-                }
-            });
+
+                    if (placeable._secondaryPreviewSprite)
+                    {
+                        placeable._secondaryPreviewSprite = TryGetReplacementSprite(placeable._secondaryPreviewSprite);
+                    }
+
+                    if (!placeable._decoration) return;
+
+                    foreach (var childGenerator in placeable._decoration.GetComponentsInChildren<MeshGenerator>())
+                    {
+                        if (childGenerator && childGenerator.sprite)
+                        {
+                            childGenerator.sprite = TryGetReplacementSprite(childGenerator.sprite);
+                        }
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                context.Logger.LogError(e);
+            }
         }
         
         [HarmonyPatch]
