@@ -12,7 +12,6 @@ using PSS;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.ResourceManagement.AsyncOperations;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Wish;
 using AnimationClip = Wish.AnimationClip;
@@ -66,8 +65,9 @@ namespace CustomTextures
             //SceneManager.sceneLoaded += SceneManager_sceneLoaded;
             ScenePortalManager.onFinishLoadingDecorations += SceneManager_sceneLoaded;
             Database.OnDataFinishedLoading += ItemLoaded;
-
         }
+        
+        
 
         private static void ItemLoaded(int itemID)
         {
@@ -105,7 +105,20 @@ namespace CustomTextures
                 }
             });
         }
+        
+        [HarmonyPatch]
+        static class DialogueController_Update_Patches
+        {
+            [HarmonyPatch(typeof(DialogueController), "LateUpdate")]
+            static void Postfix(ref Image ____bust)
+            {
+                if (!modEnabled.Value)
+                    return;
 
+                ____bust.sprite = TryGetReplacementSprite(____bust.sprite);
+            }
+        }
+        
         [HarmonyPatch(typeof(Player), "Update")]
         static class Player_Update_Patch
         {
@@ -128,7 +141,15 @@ namespace CustomTextures
             string path = AedenthornUtils.GetAssetPath(context, true);
             foreach(string file in Directory.GetFiles(path, "*.png", SearchOption.AllDirectories))
             {
-                customTextureDict.Add(Path.GetFileNameWithoutExtension(file), file);
+                var name = Path.GetFileNameWithoutExtension(file);
+
+                if (customTextureDict.ContainsKey(name))
+                {
+                    context.Logger.LogInfo($"Ignoring a duplicated filename: {name}");
+                    continue;
+                }
+                
+                customTextureDict.Add(name, file);
             }
             Dbgl($"Loaded {customTextureDict.Count} textures");
             if(DialogueController.Instance != null)
