@@ -181,7 +181,7 @@ public class CustomUI : MonoBehaviour
     {
         var table = Resources.FindObjectsOfTypeAll<CraftingTable>().First();
         var craftingTableUI = Traverse.Create(table).Field("ui").GetValue<GameObject>();
-        var searchBar = Instantiate(craftingTableUI.transform.Find("Filter/Filter").gameObject, parent);
+        var searchBar = Instantiate(craftingTableUI.transform.Find("Offset/Filter/Filter").gameObject, parent);
         ((RectTransform)searchBar.transform).sizeDelta = new Vector2(96, 18);
         searchBar.transform.localPosition = position;
         var input = searchBar.transform.Find("SearchInput").GetComponent<SunHavenInputField>();
