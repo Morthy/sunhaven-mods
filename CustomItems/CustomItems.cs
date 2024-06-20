@@ -30,7 +30,6 @@ public class CustomItems
     };
 
     private static Dictionary<int, ItemData> ItemDB = new();
-    private static Dictionary<string, int> ItemNames = new();
 
     public static Dictionary<string, List<ShopItemInfo2>> MerchantAdditions = new ();
     public static Dictionary<string, Dictionary<int, RecipeDefinition>> RecipeAdditions = new();
@@ -40,16 +39,6 @@ public class CustomItems
         return ItemDB.ContainsKey(id);
     }
 
-    public static int? IDForCustomItemName(string name)
-    {
-        if (ItemNames.TryGetValue(name, out int r))
-        {
-            return r;
-        }
-
-        return null;
-    }
-    
     public static ItemData GetCustomItem(int id)
     {
         return ItemDB[id];
@@ -64,6 +53,16 @@ public class CustomItems
             try
             {
                 var json = File.ReadAllText(path);
+                
+                // backwards compatibility
+                json = json.Replace("\n", string.Empty).Replace("\r", string.Empty);
+
+                if (json.EndsWith("],}"))
+                {
+                    json = json.Substring(0, json.Length - 3) + "]}";
+                    Plugin.logger.LogWarning($"This JSON file at {path} is invalid (the trailing , on the penultimate line). CustomItems is loading the item anyway, but this may cease to work in the future.");
+                }
+
                 var definition = json.FromJson<ItemDefinition>();
 
                 var folder = Path.GetDirectoryName(path);
@@ -80,7 +79,7 @@ public class CustomItems
             }
             catch (Exception e)
             {
-                Plugin.logger.LogError(e);
+                Plugin.logger.LogError($"An error occurred creating the item from the JSON file at {path}: {e}");
             }
         }
         
@@ -131,15 +130,14 @@ public class CustomItems
         };
         
         MerchantAdditions[definition.shop].Add(info);
-        Plugin.logger.LogDebug($"Registered {item.name} to be added to {definition.shop}");
+        Plugin.logger.LogInfo($"Registered {item.name} to be added to {definition.shop}");
     }
     
     private static void ValidateItemData(ItemDefinition data)
     {
-
         if (data.id is < 1 or > 65534)
         {
-            throw new Exception("Item field \"id\" must be present, an integer, and between 1 and 65534");
+            throw new Exception("Item field \"id\" must be present, an integer, and between 1 and 65534. If your ID field is present and fine, this likely means your JSON has a formatting error somewhere.");
         }
 
         foreach (var requiredKey in RequiredItemKeys)
@@ -198,8 +196,31 @@ public class CustomItems
         }
 
         item.icon = SpriteUtil.CreateSprite(File.ReadAllBytes(iconPath), $"Modded item icon {itemId}");
+
+        var lowerName = item.name.RemoveWhitespace().ToLower();
+
+        if (Database.Instance.ids.ContainsKey(lowerName))
+        {
+            Plugin.logger.LogWarning($"Custom item {itemId}: Another item exists with the name \"{lowerName}\", so you won't be able to add this item via the /additem command. Consider renaming your custom item.");
+        }
+        else
+        {
+            Database.Instance.ids.Add(lowerName, item.id);
+        }
+
+        Database.Instance.validIDs.Add(item.id);
+        Database.Instance.types[item.id] = typeof(ItemData);
+
+        var node = Database.Instance.lruList.AddFirst(new Database.CacheItem(item.id, item));
+
+        if (!Database.Instance.cache.ContainsKey(item.GetType()))
+        {
+            Database.Instance.cache[item.GetType()] = new Dictionary<object, LinkedListNode<Database.CacheItem>>();
+        }
+        
+        Database.Instance.cache[item.GetType()][item.id] = node;
+   
         ItemDB[item.id] = item;
-        ItemNames[item.name.RemoveWhitespace().ToLower()] = item.id;
         SingletonBehaviour<ItemInfoDatabase>.Instance.allItemSellInfos[item.id] = new ItemSellInfo()
         {
             name = item.name,
@@ -213,7 +234,7 @@ public class CustomItems
             decorationType = item.decorationType,
         };
 
-        Plugin.logger.LogDebug($"Created custom item {itemId} with name {item.name}");
+        Plugin.logger.LogInfo($"Created custom item {itemId} with name {item.name}");
 
         if (data.shopEntries is not null)
         {
@@ -233,7 +254,7 @@ public class CustomItems
                 }
 
                 RecipeAdditions[entry.list][item.id] = entry;
-                Plugin.logger.LogDebug($"Registered {item.name} to be added to crafting table {entry.list}");
+                Plugin.logger.LogInfo($"Registered {item.name} to be added to crafting table {entry.list}");
                 
             }
         }
@@ -257,7 +278,6 @@ public class CustomItems
 
     public static void AddItemsToRecipeList(CraftingTable table)
     {
-        return;
         var recipeList = Traverse.Create(table).Field("recipeList").GetValue<RecipeList>();
         
         if (recipeList == null || !RecipeAdditions.ContainsKey(recipeList.name))

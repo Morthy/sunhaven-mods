@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
@@ -22,11 +20,6 @@ namespace CustomItems
             {
                 Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} v{PluginInfo.PLUGIN_VERSION} is loaded!");
                 this.harmony.PatchAll();
-                
-                harmony.Patch(typeof(Database).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).First(
-                    m => m.Name.Equals("GetDataInternal")).MakeGenericMethod(typeof(ItemData)), 
-                    new HarmonyMethod(typeof(Patches).GetMethod("DatabaseGetData"))
-                );
             }
             catch (Exception e)
             {
@@ -38,77 +31,12 @@ namespace CustomItems
         [HarmonyPatch]
         class Patches
         {
-            
-            public static bool DatabaseGetData(int itemId, Action <ItemData>onItemLoaded, Action onItemLoadFailed = null)
-            {
-                try
-                {
-                    if (itemId == 0)
-                    {
-                        return true;
-                    }
-
-                    if (CustomItems.HasCustomItemWithID(itemId))
-                    {
-                        onItemLoaded?.Invoke(CustomItems.GetCustomItem(itemId));
-                        return false;
-                    }
-                    
-                    return true;
-                }
-                catch (Exception e)
-                {
-                    logger.LogError(e);
-                }
-
-                return true;
-            }
-
             [HarmonyPrefix]
-            [HarmonyPatch(typeof(Database), "ValidID")]
-            public static bool DatabaseValidID(int id, ref bool __result)
+            [HarmonyPatch(typeof(Database), "GetCacheCapacity")]
+            public static bool DatabaseGetCacheCapacity(ref int __result)
             {
-                try
-                {
-
-                    if (CustomItems.HasCustomItemWithID(id))
-                    {
-                        __result = true;
-                        return false;
-                    }
-
-                    return true;
-                }
-                catch (Exception e)
-                {
-                    logger.LogError(e);
-                }
-
-                return true;
-            }
-
-            [HarmonyPrefix]
-            [HarmonyPatch(typeof(Database), "GetID")]
-            public static bool GetID(string name, ref int __result)
-            {
-                try
-                {
-                    var id = CustomItems.IDForCustomItemName(name);
-
-                    if (id != null)
-                    {
-                        __result = (int)id;
-                        return false;
-                    }
-
-                    return true;
-                }
-                catch (Exception e)
-                {
-                    logger.LogError(e);
-                }
-
-                return true;
+                __result = 999999;
+                return false;
             }
             
             [HarmonyPrefix]
