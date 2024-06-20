@@ -21,11 +21,11 @@ namespace WhatFishCanICatch
         private static ConfigEntry<string> _modifierKey;
 
         private void Awake()
-        {            
+        {
             logger = Logger;
-            
+
             _modifierKey = Config.Bind<string>("General", "Mouse Button", "LeftControl", "Mouse button that should trigger opening the fishing info box");
-                     
+
             this.harmony.PatchAll();
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} v{PluginInfo.PLUGIN_VERSION} is loaded!");
         }
@@ -78,42 +78,61 @@ namespace WhatFishCanICatch
             return adjustedDictionary;
         }
 
+        private static void ShowFish()
+        {
+            if (_fishUI.gameObject.activeSelf)
+            {
+                return;
+            }
+
+            var closest = FindObjectsOfType<FishSpawner>().OrderBy(spawner => Vector2.Distance(spawner.transform.position, Player.Instance.transform.position)).FirstOrDefault();
+
+            if (!closest)
+            {
+                SingletonBehaviour<NotificationStack>.Instance.SendNotification("No fishing locations found");
+                return;
+            }
+
+            UIHandler.Instance.CloseExternalUI(_fishUI.gameObject);
+
+            closest.GetFish(); // Force currentFishSeason to be set
+            var fishList = closest.currentFishSeason;
+
+            var data = GetFishChancesFromFishData(fishList, Player.Instance.FishingSkill);
+            data = (from entry in data orderby entry.Value descending select entry).ToDictionary(i => i.Key, i => i.Value);
+
+            UIHandler.Instance.OpenUI(_fishUI.gameObject, _fishUI.gameObject.transform.parent);
+
+            _fishUI.ClearContent();
+            _fishUI.Populate(data);
+        }
+
         [HarmonyPatch]
         class Patches
         {
             [HarmonyPrefix]
-            [HarmonyPatch(typeof (ItemIcon), "OnPointerDown")]
+            [HarmonyPatch(typeof(UseItem), "Use2")]
+            private static bool FishingRodUse2(UseItem __instance)
+            {
+                ShowFish();
+                return false;
+            }
+            
+            [HarmonyPrefix]
+            [HarmonyBefore("WhatItemsCanICraft")]
+            [HarmonyPatch(typeof(ItemIcon), "OnPointerDown")]
             private static bool ItemIconOnPointerDown(ItemIcon __instance)
             {
                 try
                 {
-                    if (!Input.GetKey((KeyCode)Enum.Parse(typeof(KeyCode),_modifierKey.Value)))
+                    if (!Input.GetKey((KeyCode)Enum.Parse(typeof(KeyCode), _modifierKey.Value)))
                         return true;
 
                     Database.GetData<ItemData>(__instance.item.ID(), itemData =>
                     {
                         if (itemData.useItem && itemData.useItem.GetType() == typeof(FishingRod))
                         {
-                            var closest = FindObjectsOfType<FishSpawner>().OrderBy(spawner => Vector2.Distance(spawner.transform.position, Player.Instance.transform.position)).FirstOrDefault();
-
-                            if (!closest)
-                            {
-                                SingletonBehaviour<NotificationStack>.Instance.SendNotification("No fishing locations found");
-                                return;
-                            }
-
-                            UIHandler.Instance.CloseExternalUI(_fishUI.gameObject);
-                        
-                            closest.GetFish(); // Force currentFishSeason to be set
-                            var fishList = closest.currentFishSeason;
-
-                            var data = GetFishChancesFromFishData(fishList, Player.Instance.FishingSkill);
-                            data = (from entry in data orderby entry.Value descending select entry).ToDictionary(i => i.Key, i => i.Value);
-
-                            UIHandler.Instance.OpenUI(_fishUI.gameObject, _fishUI.gameObject.transform.parent);
-                            
-                            _fishUI.ClearContent();
-                            _fishUI.Populate(data);
+                            ShowFish();
                         }
                     });
                     
@@ -145,8 +164,5 @@ namespace WhatFishCanICatch
                 _fishUI.Create();
             }
         }
-        
     }
-
 }
-
