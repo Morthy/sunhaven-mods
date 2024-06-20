@@ -58,6 +58,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomTextures", "CustomTex
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomItems", "CustomItems\CustomItems.csproj", "{7D6A6FC7-C086-48FB-96FD-C1557A51AA79}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetterClock", "BetterClock\BetterClock.csproj", "{BCB53BBB-28E9-4510-814D-93EFD620FDA8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -180,5 +182,9 @@ Global
 		{7D6A6FC7-C086-48FB-96FD-C1557A51AA79}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7D6A6FC7-C086-48FB-96FD-C1557A51AA79}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7D6A6FC7-C086-48FB-96FD-C1557A51AA79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BCB53BBB-28E9-4510-814D-93EFD620FDA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCB53BBB-28E9-4510-814D-93EFD620FDA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCB53BBB-28E9-4510-814D-93EFD620FDA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCB53BBB-28E9-4510-814D-93EFD620FDA8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
