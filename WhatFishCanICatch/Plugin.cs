@@ -114,7 +114,11 @@ namespace WhatFishCanICatch
             [HarmonyPatch(typeof(UseItem), "Use2")]
             private static bool FishingRodUse2(UseItem __instance)
             {
-                ShowFish();
+                if (__instance is FishingRod)
+                {
+                    ShowFish();
+                }
+                
                 return false;
             }
             
