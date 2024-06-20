@@ -81,6 +81,9 @@
         <Reference Include="SteamWorks">
             <HintPath>..\lib2\com.rlabrecque.steamworks.net.dll</HintPath>
         </Reference>
+        <Reference Include="I2.Loc">
+            <HintPath>..\lib2\I2Localization.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
     <ItemGroup>

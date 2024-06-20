@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using HarmonyLib;
 using TMPro;
 using UnityEngine;
@@ -6,6 +7,8 @@ using UnityEngine.UI;
 using Wish;
 using Button = UnityEngine.UI.Button;
 using System.Collections;
+using I2.Loc;
+using PSS;
 
 namespace CreativeMode;
 
@@ -31,6 +34,8 @@ public class ItemUI : CustomUI
         {
             return;
         }
+        
+        Plugin.logger.LogInfo("Create");
 
         CreatePrefab();
         
@@ -105,6 +110,7 @@ public class ItemUI : CustomUI
         _itemPrefab = Instantiate(Traverse.Create(actualShop).Field("_buyableItemPrefab").GetValue<BuyableItem>());
         DontDestroyOnLoad(_itemPrefab);
         _itemPrefab.priceTMP.gameObject.SetActive(false);
+        Destroy(_itemPrefab.transform.Find("Panel/BuyTMP").GetComponent<Localize>());
         _itemPrefab.transform.Find("Panel/BuyTMP").GetComponent<TextMeshProUGUI>().text = "Get";
 
         RectTransform itemImage = (RectTransform)_itemPrefab.transform.Find("Panel/ItemImage");
@@ -136,6 +142,7 @@ public class ItemUI : CustomUI
 
     public void Opened()
     {
+        Plugin.logger.LogInfo("Opened");
         if (!_firstOpen)
         {
             Populate();
@@ -157,18 +164,19 @@ public class ItemUI : CustomUI
         var items = DecorationCategorization.GetMatchingItemIds(_categoryId, _filter, _page*Plugin.CataloguePageSize.Value, Plugin.CataloguePageSize.Value);
         _prevButton.gameObject.SetActive(_page > 0);
         _nextButton.gameObject.SetActive(items.Count > Plugin.CataloguePageSize.Value);
-
+        
         foreach (var i in items.Take(Plugin.CataloguePageSize.Value))
         {
-            AddItem(ItemDatabase.GetItemData(i));
-            yield return new WaitForSeconds(0.001f);
+            AddItem(i, ItemInfoDatabase.Instance.allItemSellInfos[i]);
+
+            yield return new WaitForSecondsRealtime(0.001f);
         }
 
         //_scrollRect.verticalNormalizedPosition = 1f;
         yield return null;
     }
     
-    private void AddItem(ItemData item)
+    private void AddItem(int id, ItemSellInfo item)
     {
         if (!_itemPrefab)
         {
@@ -176,57 +184,64 @@ public class ItemUI : CustomUI
         }
         
         BuyableItem newBuyableItem = Instantiate(_itemPrefab, ScrollRect.content);
-        newBuyableItem.itemImage.Initialize(item.GetItem());
+        newBuyableItem.itemImage.enabled = false;
         newBuyableItem.itemImage.ShopItem = true;
         newBuyableItem.itemNameTMP.text = item.name;
         newBuyableItem.qtyTMP.text = "";
         newBuyableItem.Qty = 9999;
 
-        if (false)
+        Database.GetData<ItemData>(id, itemData =>
         {
-            newBuyableItem.itemNameTMP.text += $" <color=green><size=80%>({item.id})</size></color>";
-        }
-
-        var realItemImage = Traverse.Create(newBuyableItem.itemImage).Field("_image").GetValue<Image>();
-
-        if (item is WallpaperData data)
-        {
-            realItemImage.sprite = data.wallpaper;
-        }
-
-        if (realItemImage.preferredHeight < realItemImage.rectTransform.sizeDelta.y && realItemImage.preferredWidth < realItemImage.rectTransform.sizeDelta.x)
-        {
-            realItemImage.rectTransform.sizeDelta = new Vector2(realItemImage.preferredWidth, realItemImage.preferredWidth);
-        }
-
-        if (item.isDLCItem && !DecorationCategorization.canUseDlcItem(item.id))
-        {
-            newBuyableItem.buyButton.gameObject.SetActive(false);
-            newBuyableItem.buy5Button.gameObject.SetActive(false);
-            newBuyableItem.buy20Button.gameObject.SetActive(false);
-            newBuyableItem.transform.Find("Panel/BuyTMP").gameObject.SetActive(false);
-            newBuyableItem.qtyTMP.text = "<color=red>DLC required</color>";
-        }
-        else
-        {        
-            newBuyableItem.buyButton.onClick.AddListener(() =>
+            if (newBuyableItem.itemImage == null)
             {
-                Player.Instance.Inventory.AddItem(item.id, 1, true);
-            });
+                return;
+            }
 
-            newBuyableItem.buy5Button.onClick.AddListener(() =>
+            if (!Plugin.ShowUnownedDLCItems.Value && itemData.isDLCItem)
             {
-                Player.Instance.Inventory.AddItem(item.id, 5, true);
-            });
-
-            newBuyableItem.buy20Button.onClick.AddListener(() =>
-            {
-                Player.Instance.Inventory.AddItem(item.id, 20, true);
-            });
+                Destroy(newBuyableItem.gameObject);
+                return;
+            }
             
-        }
-        
-        
+            if (false)
+            {
+                // newBuyableItem.itemNameTMP.text += $" <color=green><size=80%>({item.id})</size></color>";
+            }
+
+            newBuyableItem.itemImage.Initialize(itemData.GetItem());
+            newBuyableItem.itemImage.enabled = true;
+
+            var realItemImage = Traverse.Create(newBuyableItem.itemImage).Field("_image").GetValue<Image>();
+
+            if (itemData is WallpaperData data)
+            {
+                realItemImage.sprite = data.wallpaper;
+            }
+
+            if (realItemImage.preferredHeight < realItemImage.rectTransform.sizeDelta.y && realItemImage.preferredWidth < realItemImage.rectTransform.sizeDelta.x)
+            {
+                realItemImage.rectTransform.sizeDelta = new Vector2(realItemImage.preferredWidth, realItemImage.preferredWidth);
+            }
+
+            if (itemData.isDLCItem && !DecorationCategorization.canUseDlcItem(id))
+            {
+                newBuyableItem.buyButton.gameObject.SetActive(false);
+                newBuyableItem.buy5Button.gameObject.SetActive(false);
+                newBuyableItem.buy20Button.gameObject.SetActive(false);
+                newBuyableItem.transform.Find("Panel/BuyTMP").gameObject.SetActive(false);
+                newBuyableItem.qtyTMP.text = "<color=red>DLC required</color>";
+            }
+            else
+            {
+                newBuyableItem.buyButton.onClick.AddListener(() => { Player.Instance.Inventory.AddItem(id, 1, true); });
+
+                newBuyableItem.buy5Button.onClick.AddListener(() => { Player.Instance.Inventory.AddItem(id, 5, true); });
+
+                newBuyableItem.buy20Button.onClick.AddListener(() => { Player.Instance.Inventory.AddItem(id, 20, true); });
+            }
+        });
+
+
         newBuyableItem.itemToUseAsCurrency = null;
         newBuyableItem.coinsPrice = 0;
         newBuyableItem.ticketsPrice = 0;

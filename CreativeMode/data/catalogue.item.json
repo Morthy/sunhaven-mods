@@ -1,0 +1,26 @@
+{
+	"id": 61010,
+	"name": "Decoration Catalogue",
+	"image": "catalogue.png",
+	"description": "Somehow this flimsy book contains a wealth of knowledge about every possible decoration.",
+	"helpDescription": "",
+	"useDescription": "(Left click anywhere on the screen while selected to open the decoration catalogue))",
+	"stackSize": 999,
+	"canSell": true,
+	"canTrade": true,
+	"canTrash": true,
+	"goldSellPrice": 10,
+	"orbsSellPrice": 10,
+	"ticketSellPrice": 10,
+	"category": 1,
+	"rarity": 4,
+    "shopEntries": [
+		{
+			"shop": "BernardMerchantTable",
+			"amount": 1,
+			"costGold": 0,
+			"costTickets": 0,
+			"costOrbs": 0
+		}
+	]
+}

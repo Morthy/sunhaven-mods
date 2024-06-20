@@ -257,6 +257,7 @@ public class CustomItems
 
     public static void AddItemsToRecipeList(CraftingTable table)
     {
+        return;
         var recipeList = Traverse.Create(table).Field("recipeList").GetValue<RecipeList>();
         
         if (recipeList == null || !RecipeAdditions.ContainsKey(recipeList.name))

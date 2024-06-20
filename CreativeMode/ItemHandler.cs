@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using PSS;
 using UnityEngine;
 using Wish;
 using Object = UnityEngine.Object;
@@ -10,84 +14,72 @@ namespace CreativeMode;
 
 public static class ItemHandler
 {
-    public const int DecorationCatalogueId = 30010;
-    
-    public static void CreateDecorationCatalogueItem()
+    public const int DecorationCatalogueId = 61010;
+    public static bool IsLoaded;
+    public static bool IsLoading;
+    private static Dictionary<int, ItemData> ItemCache = new();
+
+    public static void SetupDecorationCatalogueItem()
     {
-        
-        if (ItemDatabase.GetItemData(DecorationCatalogueId) && ItemDatabase.GetItemData(DecorationCatalogueId).name != "Decoration Catalogue")
+        Database.GetData<ItemData>(DecorationCatalogueId, item =>
         {
-            Plugin.logger.LogInfo(ItemDatabase.GetItemData(DecorationCatalogueId).name);
-            Plugin.logger.LogError("Cannot create decoration catalogue, an item already exists with this ID.");
-            return;
-        }
-        
-        var item = ScriptableObject.CreateInstance<ItemData>();
-        JsonUtility.FromJsonOverwrite(LoadFile("data.30010.json"), item);
-        
-        var texture = CreateTexture(LoadFileBytes("img.30010.png"));
-        var sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), 24);
-        item.icon = sprite;
-
-        item.useItem = new GameObject("Decoration Catalogue Useable").AddComponent<DecorationCatalogue>();
-        Object.DontDestroyOnLoad(item.useItem);
-
-        ItemDatabase.itemDatas[item.id] = item;
-        ItemDatabase.ids[item.name.RemoveWhitespace().ToLower()] = item.id;
-    }
-    
-
-    private static string GetResourcePath(string name)
-    {
-        var assembly = Assembly.GetExecutingAssembly();
-        string resourcePath = name;
-        if (!name.StartsWith(nameof(CreativeMode)))
-        {
-            resourcePath = assembly.GetManifestResourceNames()
-                .Single(str => str.EndsWith(name));
-        }
-
-        return resourcePath;
-    }
-    
-    private static string LoadFile(string name)
-    {
-        var assembly = Assembly.GetExecutingAssembly();
-
-        using (var stream = assembly.GetManifestResourceStream(GetResourcePath(name)))
-        using (var reader = new StreamReader(stream ?? throw new InvalidOperationException()))
-        {
-            return reader.ReadToEnd();
-        }
-    }
-    
-    private static byte[] LoadFileBytes(string name)
-    {
-        var assembly = Assembly.GetExecutingAssembly();
-
-        using (var stream = assembly.GetManifestResourceStream(GetResourcePath(name)))
-        using (var reader = new StreamReader(stream ?? throw new InvalidOperationException()))
-        {
-            byte[] bytes;
-            using (var memoryStream = new MemoryStream())
+            if (!item.name.Equals("Decoration Catalogue"))
             {
-                reader.BaseStream.CopyTo(memoryStream);
-                bytes = memoryStream.ToArray();
+                throw new Exception("Refusing to setup decoration catalogue because another item exists with its ID");
+            }
+            
+            item.useItem = new GameObject("Decoration Catalogue Useable").AddComponent<DecorationCatalogue>();
+            Object.DontDestroyOnLoad(item.useItem);
+            Plugin.logger.LogDebug("Setup catalogue useItem");
+        });
+    }
+
+    public static ItemData GetItem(int itemId)
+    {
+        return ItemCache[itemId];
+    }
+
+    public static IEnumerator LoadAllItems(Action onDone)
+    {
+        NotificationStack.Instance.SendNotification("<color=orange>Creative Mode</color>: Loading item data (this may take a few seconds, but only has to be done once)");
+
+        var lastPercent = 0;
+        var start = new Stopwatch();
+        start.Start();
+        IsLoading = true;
+        var error = false;
+        
+        foreach (var itemId in DecorationCategorization.GetAllItems())
+        {
+            Database.GetData<ItemData>(itemId, data => ItemCache[itemId] = data, () => error = true);          
+        }
+        
+        while (ItemCache.Count != DecorationCategorization.GetAllItems().Count)
+        {
+            var percentDone = (int)Math.Floor((double)ItemCache.Count / DecorationCategorization.GetAllItems().Count * 100);
+            Plugin.logger.LogInfo(percentDone);
+
+            if (lastPercent != percentDone && percentDone is > 0 and (25 or 50 or 75))
+            {
+                NotificationStack.Instance.SendNotification($"<color=orange>Creative Mode</color>: Loading item data ({percentDone}% complete)");
             }
 
-            return bytes;
+            lastPercent = percentDone;
+            
+                if (error)
+                {
+                    IsLoading = false;
+                    yield break;
+                }
+                
+            yield return new WaitForSecondsRealtime(0.1f);
         }
-    }
-    
-    private static Texture2D CreateTexture(byte[] data)
-    {
-        var texture = new Texture2D(1, 1);
-        texture.LoadImage(data);
-        texture.filterMode = FilterMode.Point;
-        texture.wrapMode = TextureWrapMode.Clamp;
-        texture.wrapModeU = TextureWrapMode.Clamp;
-        texture.wrapModeV = TextureWrapMode.Clamp;
-        texture.wrapModeW = TextureWrapMode.Clamp;
-        return texture;
+
+        Plugin.logger.LogDebug($"Loaded all items in {start.ElapsedMilliseconds}ms");
+        IsLoaded = true;
+        IsLoading = false;
+        onDone();
+
+        yield return null;
     }
 }

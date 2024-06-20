@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using HarmonyLib;
+using I2.Loc;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -170,19 +172,20 @@ public class CustomUI : MonoBehaviour
 
     protected static Button CreateExitButton(Transform parent)
     {
-        var buttonTransform = Instantiate(Traverse.Create(UIHandler.Instance).Field("_inventoryUI").GetValue<GameObject>().transform.Find("ExitButton"), parent);
+        var buttonTransform = Instantiate(Traverse.Create(UIHandler.Instance).Field("_inventoryUI").GetValue<GameObject>().transform.Find("Inventory/ExitButton"), parent);
         buttonTransform.localPosition = new Vector3(177, 219, 0);
         return buttonTransform.gameObject.GetComponent<Button>();
     }
 
-    protected static TMP_InputField CreateSearchBar(Transform parent, Vector3 position)
+    protected static SunHavenInputField CreateSearchBar(Transform parent, Vector3 position)
     {
-        var craftingTableUI = Traverse.Create(((Placeable)ItemDatabase.GetItemData(10706).useItem)._decoration).Field("ui").GetValue<GameObject>();
+        var table = Resources.FindObjectsOfTypeAll<CraftingTable>().First();
+        var craftingTableUI = Traverse.Create(table).Field("ui").GetValue<GameObject>();
         var searchBar = Instantiate(craftingTableUI.transform.Find("Filter/Filter").gameObject, parent);
         ((RectTransform)searchBar.transform).sizeDelta = new Vector2(96, 18);
         searchBar.transform.localPosition = position;
-        var input = searchBar.transform.Find("SearchInput").GetComponent<TMP_InputField>();
-        input.onValueChanged = new TMP_InputField.OnChangeEvent();
+        var input = searchBar.transform.Find("SearchInput").GetComponent<SunHavenInputField>();
+        input.onValueChanged = new SunHavenInputField.OnChangeEvent();
         return input;
     }
 
@@ -207,7 +210,10 @@ public class CustomUI : MonoBehaviour
         btn.onClick = new Button.ButtonClickedEvent();
         ((RectTransform)gameObject.transform).sizeDelta = sizeDelta;
         gameObject.transform.localPosition = position;
-        btn.transform.Find("Text (TMP)").GetComponent<TextMeshProUGUI>().text = name;
+
+        var txt = btn.transform.Find("Text (TMP)");
+        Destroy(txt.GetComponent<Localize>());
+        txt.GetComponent<TextMeshProUGUI>().text = name;
         return btn;
     }
 

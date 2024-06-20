@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using BepInEx;
 using BepInEx.Configuration;
@@ -8,11 +8,11 @@ using HarmonyLib;
 using TMPro;
 using UnityEngine;
 using Wish;
-using Tree = Wish.Tree;
 
 namespace CreativeMode;
 
 [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+[BepInDependency("CustomItems", "0.2.2")]
 public class Plugin : BaseUnityPlugin
 {
     private readonly Harmony _harmony = new (PluginInfo.PLUGIN_GUID);
@@ -83,6 +83,7 @@ public class Plugin : BaseUnityPlugin
         return DecorationCategorization.Categories.Where(a => a.Value.Contains(id)).Aggregate("", (current, a) => current + (a.Key + ","));
     }
 
+    /*
     private static void Debug()
     {
         var txt = "";
@@ -134,42 +135,25 @@ public class Plugin : BaseUnityPlugin
         
         File.WriteAllText("C:\\Users\\morth\\Desktop\\items.csv", txt);
     }
+    */
     
     [HarmonyPatch]
     private class Patches
     {
-        // Adds decoration catalogue to the shop
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(SaleManager), "Awake")]
-        public static void SaleManagerAwake()
-        {
-            
-            var table = SingletonBehaviour<SaleManager>.Instance.merchantTables.First(t => t.name.Equals("BernardMerchantTable"));
-
-            if (table.startingItems.Exists(i => i.item.id == 30010))
-            {
-                return;
-            }
-            
-            table.startingItems.Insert(0, new ShopItemInfo()
-            {
-                amount = 1,
-                item = ItemDatabase.GetItemData(30010),
-                price = 0,
-                itemToUseAsCurrency = ItemDatabase.GetItemData(18013),
-                characterProgressIDs = new List<Progress>(),
-                worldProgressIDs = new List<Progress>(),
-            });
-            
-            logger.LogDebug("Added item to shop");
-        }
 
         // Creates the decoration catalogue item
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(MainMenuController), "Awake")]
-        public static void MainMenuControllerAwake()
+        [HarmonyPatch(typeof(MainMenuController), "Start")]
+        public static void MainMenuControllerStart()
         {
-            ItemHandler.CreateDecorationCatalogueItem();
+            try
+            {
+                ItemHandler.SetupDecorationCatalogueItem();
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e);
+            }
             //Debug();
         }
         
@@ -210,7 +194,7 @@ public class Plugin : BaseUnityPlugin
             
             if (SceneSettingsManager.Instance.GetCurrentSceneSettings != null && SceneSettingsManager.Instance.GetCurrentSceneSettings.playerMap)
             {
-                ____animalCountTMP.text = ___currentAnimalCount + "/" + "<size=60%><color=green>∞</color></size>";
+                ____animalCountTMP.text = ___currentAnimalCount.ToString();
             }
         }        
         
@@ -238,7 +222,7 @@ public class Plugin : BaseUnityPlugin
             
             if (ScenePortalManager.ActiveSceneName.Equals("2playerfarm"))
             {
-                ____fishNetCountTMP.text = ___currentFishingNetCount + "/" + "<size=60%><color=green>∞</color></size>";
+                ____fishNetCountTMP.text = ___currentFishingNetCount.ToString();
             }
         }        
         

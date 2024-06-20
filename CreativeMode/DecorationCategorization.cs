@@ -131,17 +131,17 @@ public static class DecorationCategorization
 
         var s = baseItems.Select(s => s);
 
-        if (!Plugin.ShowUnownedDLCItems.Value)
+        /*if (!Plugin.ShowUnownedDLCItems.Value)
         {
-            s = s.Select(i => new { id = i, ItemDatabase.GetItemData(i).isDLCItem })
+            s = s.Select(i => new { id = i, ItemHandler.GetItem(i).isDLCItem })
                 .Where(arg => !arg.isDLCItem || DecorationCategorization.canUseDlcItem(arg.id))
                 .Select(arg => arg.id);
-        }
+        }*/
 
         if (!search.Equals(""))
         {
             var splitSearch = search.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            s = s.Select(i => new { id = i, ItemDatabase.GetItemData(i).name })
+            s = s.Select(i => new { id = i, ItemInfoDatabase.Instance.allItemSellInfos[i].name })
                 .Where(arg => splitSearch.Count(searchWord => arg.name.IndexOf(searchWord, StringComparison.OrdinalIgnoreCase) >= 0) == splitSearch.Length)
                 .OrderBy(arg => LevenshteinDistance(search, arg.name))
                 .ThenBy(arg => arg.name)
@@ -149,7 +149,7 @@ public static class DecorationCategorization
         }
         else
         {
-            s = s.OrderBy(x => ItemDatabase.GetItemData(x).name);
+            s = s.OrderBy(x => ItemInfoDatabase.Instance.allItemSellInfos[x].name);
         }
 
         return s.Skip(offset).Take(limit + 1).ToList();
@@ -160,7 +160,7 @@ public static class DecorationCategorization
         return _dlcAssociation.ContainsKey(itemId) && GameSave.Instance.GetProgressBoolCharacter(_dlcAssociation[itemId]);
     }
 
-    private static List<int> GetAllItems()
+    public static List<int> GetAllItems()
     {
         if (_allItems == null)
         {
