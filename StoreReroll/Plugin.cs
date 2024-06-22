@@ -5,6 +5,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using PSS;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Wish;
@@ -61,7 +62,7 @@ public class Plugin : BaseUnityPlugin
 
     private static Dictionary<string, int> Rerolls = new ();
     private static Dictionary<(string Key, int Reroll), int> BuyCounts = new ();
-    private static Dictionary<string, List<ShopLootAmount>> History = new ();
+    private static Dictionary<string, List<ShopLootAmount2>> History = new ();
     private static Dictionary<SaleType, bool> SkipPrompt = new();
 
     private void Awake()
@@ -162,7 +163,7 @@ public class Plugin : BaseUnityPlugin
         return GetFormattedRerollPrice((MannequinTable)saleStand);
     }
         
-    private static int GetPrice(SaleStand saleStand, ShopLoot shopLoot)
+    private static int GetPrice(SaleStand saleStand, ShopLoot2 shopLoot)
     {
         switch (saleStand.goldType)
         {
@@ -175,7 +176,7 @@ public class Plugin : BaseUnityPlugin
         }
     }
     
-    private static int GetPrice(MannequinTable saleStand, ShopLoot shopLoot)
+    private static int GetPrice(MannequinTable saleStand, ShopLoot2 shopLoot)
     {
         switch (saleStand.goldType)
         {
@@ -188,17 +189,17 @@ public class Plugin : BaseUnityPlugin
         }
     }
 
-    private static ShopLootAmount GenerateItem(List<ShopLootAmount> history, SaleType saleType, int rerolls)
+    private static ShopLootAmount2 GenerateItem(List<ShopLootAmount2> history, SaleType saleType, int rerolls)
     {
         var previousItem = history[rerolls - 1];
         var i = 0;
-        ShopLootAmount loot;
+        ShopLootAmount2 loot;
             
         // Prevent a reroll ever rolling the exact same item twice in a row
         do
         {
             loot = SingletonBehaviour<SaleManager>.Instance.GenerateRandomItems(saleType, ref history);
-        } while (++i < 10 && loot.shopLoot.item.id == previousItem.shopLoot.item.id);
+        } while (++i < 10 && loot.shopLoot.id == previousItem.shopLoot.id);
 
         return loot;
     }
@@ -207,10 +208,10 @@ public class Plugin : BaseUnityPlugin
     {
         var key = GetKey(saleStand);
         var rerolls = RerollCount(saleStand);
-        List<ShopLootAmount> history = History[key];
+        List<ShopLootAmount2> history = History[key];
         var t = Traverse.Create(saleStand);
 
-        ShopLootAmount loot;
+        ShopLootAmount2 loot;
         
         if (history.Count < rerolls + 1)
         {
@@ -228,23 +229,27 @@ public class Plugin : BaseUnityPlugin
         }
 
         var price = GetPrice(saleStand, loot.shopLoot);
+        
+        Database.GetData<ItemData>(loot.shopLoot.id, data =>
+        {
+            t.Field("shopItem").SetValue(loot);
+            t.Field("price").SetValue(price);
+            t.Field("itemData").SetValue(data);
 
-        t.Field("shopItem").SetValue(loot);
-        t.Field("price").SetValue(price);
-
-        saleStand.GetType().GetMethod("SetVisualFromItem", BindingFlags.NonPublic | BindingFlags.Instance)
-            .Invoke(saleStand, new object[]{ loot.shopLoot.item, t.Field("useIcon").GetValue<bool>(), price });
+            saleStand.GetType().GetMethod("SetVisualFromItem", BindingFlags.NonPublic | BindingFlags.Instance)
+                .Invoke(saleStand, new object[]{ data, t.Field("useIcon").GetValue<bool>(), price });
+        });
     }
-    
+
     private static void SetItemFromReroll(MannequinTable saleStand)
     {
         var key = GetKey(saleStand);
         var rerolls = RerollCount(saleStand);
-        List<ShopLootAmount> history = History[key];
+        List<ShopLootAmount2> history = History[key];
         var t = Traverse.Create(saleStand);
 
-        ShopLootAmount loot;
-        
+        ShopLootAmount2 loot;
+
         if (history.Count < rerolls + 1)
         {
             loot = GenerateItem(history, t.Field("saleType").GetValue<SaleType>(), rerolls);
@@ -262,15 +267,20 @@ public class Plugin : BaseUnityPlugin
 
         var price = GetPrice(saleStand, loot.shopLoot);
 
-        t.Field("currentOutfit").SetValue(loot.shopLoot.item as MannequinOutfit);
-        t.Field("price").SetValue(loot.shopLoot.Price);
+        Database.GetData<MannequinOutfit>(loot.shopLoot.id, data =>
+        {
+            t.Field("currentOutfit").SetValue(data);
+            t.Field("price").SetValue(loot.shopLoot.Price);
 
-        saleStand.GetType().GetMethod("InitializeOutfit", BindingFlags.NonPublic | BindingFlags.Instance)
-            .Invoke(saleStand, new object[] {});
-        
-        saleStand.GetType().GetMethod("SetVisualFromItem", BindingFlags.NonPublic | BindingFlags.Instance)
-            .Invoke(saleStand, new object[]{ price });
+            saleStand.GetType().GetMethod("InitializeOutfit", BindingFlags.NonPublic | BindingFlags.Instance)
+                .Invoke(saleStand, new object[] { });
+
+            saleStand.GetType().GetMethod("SetVisualFromItem", BindingFlags.NonPublic | BindingFlags.Instance)
+                .Invoke(saleStand, new object[] { price });
+
+        });
     }
+
 
     private static int RerollCount(Entity saleStand)
     {
@@ -510,13 +520,13 @@ public class Plugin : BaseUnityPlugin
             
         [HarmonyPostfix]
         [HarmonyPatch(typeof(SaleStand), "Initialize")]
-        public static void SaleStandInitializePostfix(ref SaleStand __instance, ref bool __state, ref ShopLootAmount ___shopItem)
+        public static void SaleStandInitializePostfix(ref SaleStand __instance, ref bool __state, ref ShopLootAmount2 ___shopItem)
         {
             try
             {
                 if (__state)
                 {
-                    History[GetKey(__instance)] = new List<ShopLootAmount>() { ___shopItem };
+                    History[GetKey(__instance)] = new List<ShopLootAmount2>() { ___shopItem };
                 }
             }
             catch (Exception e)
@@ -603,16 +613,13 @@ public class Plugin : BaseUnityPlugin
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(MannequinTable), "Initialize")]
-        public static void MannequinTableInitializePostfix(ref MannequinTable __instance, ref bool __state, ref MannequinOutfit ___currentOutfit)
+        public static void MannequinTableInitializePostfix(ref MannequinTable __instance, ref bool __state, ref SaleType ___saleType, ref int ___saleIndex)
         {
             try
             {
                 if (__state)
                 {
-                    var loot = new ShopLootAmount();
-                    loot.shopLoot = new ShopLoot();
-                    loot.shopLoot.item = ___currentOutfit;
-                    History[GetKey(__instance)] = new List<ShopLootAmount>() { loot };
+                    History[GetKey(__instance)] = new List<ShopLootAmount2>() { SingletonBehaviour<SaleManager>.Instance.GetShopItem(___saleType, ___saleIndex) };
                 }
             }
             catch (Exception e)
