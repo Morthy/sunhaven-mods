@@ -15,11 +15,11 @@ public class PlayerStatus : MonoBehaviour
 
     public void Awake()
     {
-        var questPosition = UIHandler.Instance.transform.Find("QuestTracker/Scroll View").localPosition;
+        var questPosition = Player.Instance.transform.Find("UI_Quests/QuestTracker/Scroll View").localPosition;
         
-        _text = Instantiate(UIHandler.Instance.transform.Find("QuestTracker/SkillTreeVisibilityToggle/SkillTreeNameTMP").GetComponent<TextMeshProUGUI>(), transform);
+        _text = Instantiate(Player.Instance.transform.Find("UI_Quests/QuestTracker/SkillTreeVisibilityToggle/SkillTreeNameTMP").GetComponent<TextMeshProUGUI>(), transform);
         _text.rectTransform.sizeDelta = new Vector2(120, 250);
-        _text.rectTransform.localPosition = new Vector3(questPosition.x-47, -152, 0);
+        _text.rectTransform.localPosition = new Vector3(questPosition.x-47, -188, 0);
         _text.fontSize = 15;
         _text.alignment = TextAlignmentOptions.TopRight;
         _text.name = "Status";

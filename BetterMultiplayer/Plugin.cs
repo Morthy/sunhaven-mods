@@ -42,7 +42,7 @@ public class Plugin : BaseUnityPlugin
     {
         QuantumConsole.Instance.gameObject.transform.Find("ConsoleRect/IOBar").gameObject.SetActive(false);
         QuantumConsole.Instance.gameObject.transform.Find("ConsoleRect/Console").GetComponent<Image>().color = new Color(1, 1, 1, 0.2f);
-        ((RectTransform)QuantumConsole.Instance.transform.Find("ConsoleRect")).sizeDelta = new Vector2(280, 100);
+        ((RectTransform)QuantumConsole.Instance.transform.Find("ConsoleRect")).sizeDelta = new Vector2(280, 122);
         _inPreviewMode = true;
     }
 
@@ -248,7 +248,7 @@ public class Plugin : BaseUnityPlugin
     
                 _playerStatus = new GameObject("Player multiplayer status").AddComponent<PlayerStatus>();
                 
-                _playerStatus.transform.SetParent(__instance.transform);
+                _playerStatus.transform.SetParent(Player.Instance.transform.Find("UI_Quests"));
                 _playerStatus.transform.localPosition = Vector3.zero;
                 _playerStatus.transform.localScale = Vector3.one;
                 _playerStatus.transform.SetAsLastSibling();
