@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using BepInEx;
 using Morthy.Util;
 using UnityEngine;
 using Wish;
@@ -47,6 +48,8 @@ public class CustomItems
     public static void AddItems()
     {
         MerchantAdditions.Clear();
+        RecipeAdditions.Clear();
+        ItemDB.Clear();
         
         foreach (var path in GetItemDefinitionPaths())
         {
@@ -149,11 +152,9 @@ public class CustomItems
         }
     }
 
-    private static bool IsExistingInternalItem(int itemId)
+    private static bool IsExistingInternalItem(int itemId, string customName)
     {
-        var ids = Traverse.Create(Database.Instance).Field("validIDs").GetValue<HashSet<int>>();
-
-        return ids.Contains(itemId);
+        return ItemInfoDatabase.Instance.allItemSellInfos.ContainsKey(itemId) && !ItemInfoDatabase.Instance.allItemSellInfos[itemId].name.Equals(customName);
     }
 
     public static ItemData CreateItem(string folder, ItemDefinition data)
@@ -179,7 +180,7 @@ public class CustomItems
         
         var itemId = item.id;
 
-        if (IsExistingInternalItem(item.id))
+        if (IsExistingInternalItem(item.id, item.name))
         {
             throw new Exception($"Failed to create modded item with ID {itemId} because the ID is in use by Sun Haven itself.");
         }
@@ -199,13 +200,13 @@ public class CustomItems
 
         var lowerName = item.name.RemoveWhitespace().ToLower();
 
-        if (Database.Instance.ids.ContainsKey(lowerName))
+        if (Database.Instance.ids.ContainsKey(lowerName) && Database.Instance.ids[lowerName] != item.id)
         {
             Plugin.logger.LogWarning($"Custom item {itemId}: Another item exists with the name \"{lowerName}\", so you won't be able to add this item via the /additem command. Consider renaming your custom item.");
         }
         else
         {
-            Database.Instance.ids.Add(lowerName, item.id);
+            Database.Instance.ids[lowerName] = item.id;
         }
 
         Database.Instance.validIDs.Add(item.id);
