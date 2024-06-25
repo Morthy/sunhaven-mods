@@ -72,7 +72,7 @@ public class CustomFurniture
     {
         ValidateItemData(definition);
         
-        var item = CustomItems.CreateItem(folder, definition);
+        var item = CustomItems.CreateItem(folder, definition, null);
         var furnitureData = definition.decoration;
         
         var useItem = new GameObject(item.name + " Placeable").AddComponent<Placeable>();

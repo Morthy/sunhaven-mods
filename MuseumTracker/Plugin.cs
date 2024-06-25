@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
+using UnityEngine;
 using Wish;
 
 namespace MuseumTracker
@@ -654,12 +655,6 @@ namespace MuseumTracker
                 }
             }
         }
-        
-        public static string GetProgressKey(BundleType bundleType, string bundleId, int itemId)
-        {
-            return "Mod_MuseumTracker_" + bundleType + bundleId + itemId;
-        }
-
         public static void RecordData(HungryMonster bundle)
         {
             if (bundle.bundleType != BundleType.MuseumBundle && bundle.bundleType != BundleType.DynusAltar)
@@ -707,7 +702,14 @@ namespace MuseumTracker
 
                             if (donated < requiredAmount)
                             {
-                                __result += $"\n<color=#ed77f8><size=65%>Required: {BundleNames[bundleId]} ({donated}/{requiredAmount})</size></color>";
+                                if (bundleId >= 10440 && bundleId <= 10448)
+                                {
+                                    __result += $"\n<color=#f8a577><size=65%>Required: {BundleNames[bundleId]} ({donated}/{requiredAmount})</size></color>";
+                                }
+                                else
+                                {
+                                    __result += $"\n<color=#ed77f8><size=65%>Required: {BundleNames[bundleId]} ({donated}/{requiredAmount})</size></color>";
+                                }
                             }
                         }
                     }
@@ -715,6 +717,59 @@ namespace MuseumTracker
                 catch (Exception e)
                 {
                     logger.LogError($"Plugin {PluginInfo.PLUGIN_GUID} error: {e}");
+                }
+            }
+        }
+        
+        [HarmonyPatch(typeof(Chest), "SaveMeta")]
+        class HarmonyPatch_HungryMonster_SaveMeta
+        {
+            private static void Postfix(ref HungryMonster __instance)
+            {
+                try
+                {
+                    if (__instance is not HungryMonster)
+                    {
+                        return;
+                    }
+                    
+                    if (__instance.bundleType != BundleType.MuseumBundle && __instance.bundleType != BundleType.DynusAltar)
+                    {
+                        return;
+                    }
+                    
+                    if (!Traverse.Create(__instance).Field("interacting").GetValue<bool>())
+                    {
+                        return;
+                    }
+
+                    var inventory = __instance.playerInventory;
+
+                    foreach (var x in inventory.Items)
+                    {
+                        if (x.id == 0)
+                        {
+                            continue;
+                        }
+
+                        var rarity = x.slot.gameObject.transform.Find("ItemIcon(Clone)/RarityBackground");
+                        if (rarity)
+                        {
+                            rarity.GetComponent<CanvasRenderer>().SetAlpha(Bundles[__instance.id].ContainsKey(x.id) ? 1f : 0.3f);   
+                        }
+                        
+                        var icon = x.slot.gameObject.transform.Find("ItemIcon(Clone)/ItemImage");
+                        if (icon)
+                        {
+                            icon.GetComponent<CanvasRenderer>().SetAlpha(Bundles[__instance.id].ContainsKey(x.id) ? 1f : 0.3f);   
+                        }
+                    }
+                    
+
+                }
+                catch (Exception e)
+                {
+                    logger.LogError(e);
                 }
             }
         }
