@@ -43,47 +43,65 @@
 
     <ItemGroup>
         <Reference Include="Sirenix.Serialization">
-            <HintPath>..\lib2\Sirenix.Serialization.dll</HintPath>
+            <HintPath>$(ManagedDataPath)\Sirenix.Serialization.dll</HintPath>
+            <Private>false</Private>
         </Reference>
         <Reference Include="SunHaven.Core">
-            <HintPath>..\lib2\SunHaven.Core.dll</HintPath>
+            <HintPath>$(ManagedDataPath)\SunHaven.Core.dll</HintPath>
+            <Private>false</Private>
         </Reference>
         <Reference Include="PSS">
-            <HintPath>..\lib2\PSS.Database.dll</HintPath>
+            <HintPath>$(ManagedDataPath)\PSS.Database.dll</HintPath>
+            <Private>false</Private>
         </Reference>
         <Reference Include="UnityEngine.UI">
-            <HintPath>..\lib2\UnityEngine.UI.dll</HintPath>
+            <HintPath>$(ManagedDataPath)\UnityEngine.UI.dll</HintPath>
+            <Private>false</Private>
         </Reference>        
         <Reference Include="Unity.ResourceManager">
-            <HintPath>..\lib2\Unity.ResourceManager.dll</HintPath>
+            <HintPath>$(ManagedDataPath)\Unity.ResourceManager.dll</HintPath>
+            <Private>false</Private>
         </Reference>
         <Reference Include="Unity.TextMeshPro">
-            <HintPath>..\lib2\Unity.TextMeshPro.dll</HintPath>
+            <HintPath>$(ManagedDataPath)\Unity.TextMeshPro.dll</HintPath>
+            <Private>false</Private>
         </Reference>
         <Reference Include="ZeroFormatter">
-            <HintPath>..\lib2\ZeroFormatter.dll</HintPath>
+            <HintPath>$(ManagedDataPath)\ZeroFormatter.dll</HintPath>
+            <Private>false</Private>
         </Reference>        
         <Reference Include="ZeroFormatter">
-            <HintPath>..\lib2\ZeroFormatter.Interfaces.dll</HintPath>
+            <HintPath>$(ManagedDataPath)\ZeroFormatter.Interfaces.dll</HintPath>
+            <Private>false</Private>
         </Reference>        
         <Reference Include="DOVirtual">
-            <HintPath>..\lib2\DOTween.dll</HintPath>
+            <HintPath>$(ManagedDataPath)\DOTween.dll</HintPath>
+            <Private>false</Private>
         </Reference>        
         <Reference Include="Mirror">
-            <HintPath>..\lib2\Mirror.dll</HintPath>
+            <HintPath>$(ManagedDataPath)\Mirror.dll</HintPath>
+            <Private>false</Private>
         </Reference>        
         <Reference Include="System.Core">
-            <HintPath>..\lib2\System.Core.dll</HintPath>
+            <HintPath>$(ManagedDataPath)\System.Core.dll</HintPath>
+            <Private>false</Private>
         </Reference>       
         <Reference Include="Assembly-CSharp">
-            <HintPath>..\lib2\Assembly-CSharp.dll</HintPath>
+            <HintPath>$(ManagedDataPath)\Assembly-CSharp.dll</HintPath>
+            <Private>false</Private>
         </Reference>
         <Reference Include="SteamWorks">
-            <HintPath>..\lib2\com.rlabrecque.steamworks.net.dll</HintPath>
+            <HintPath>$(ManagedDataPath)\com.rlabrecque.steamworks.net.dll</HintPath>
+            <Private>false</Private>
         </Reference>
         <Reference Include="I2.Loc">
-            <HintPath>..\lib2\I2Localization.dll</HintPath>
+            <HintPath>$(ManagedDataPath)\I2Localization.dll</HintPath>
+            <Private>false</Private>
         </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="$(ProjectDir)files\**" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
     <ItemGroup>
@@ -96,12 +114,20 @@
     <!-- Copy to plugins folder and zip -->
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
         <ItemGroup>
-            <AllFiles Include="$(TargetDir)**\$(TargetName).dll" />
+            <IncludedFiles Include="$(TargetDir)\files\**\*.*" />
         </ItemGroup>
-        <Copy SourceFiles="@(AllFiles)" DestinationFolder="$(GamePath)\BepInEx\plugins\%(RecursiveDir)"></Copy>
-        <Delete Files="$(ProjectDir)\bin\$(TargetName).zip" />
-        <Copy SourceFiles="@(AllFiles)" DestinationFolder="$(TargetDir)..\Release\%(RecursiveDir)"></Copy>
-        <ZipDirectory SourceDirectory="$(TargetDir)..\Release" DestinationFile="$(ProjectDir)\bin\$(TargetName).zip" />
+        <Copy SourceFiles="@(IncludedFiles)" DestinationFolder="$(TargetDir)\%(RecursiveDir)" SkipUnchangedFiles="true" />
+        <RemoveDir Directories="$(TargetDir)\Files" />
+        <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+            <AllFiles Include="$(TargetDir)**" />
+        </ItemGroup>
+        <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+            <AllFiles Include="$(TargetDir)**" Exclude="$(TargetDir)**\*.pdb" />
+        </ItemGroup>
+        <Copy SourceFiles="@(AllFiles)" DestinationFolder="$(GamePath)\BepInEx\plugins\$(PluginReleasePath)\%(RecursiveDir)"></Copy>
+        <Delete Files="$(ProjectDir)\bin\$(TargetName)-$(Version).zip" />
+        <Copy SourceFiles="@(AllFiles)" DestinationFolder="$(TargetDir)..\Release\$(PluginReleasePath)%(RecursiveDir)"></Copy>
+        <ZipDirectory SourceDirectory="$(TargetDir)..\Release" DestinationFile="$(ProjectDir)\bin\$(TargetName)-$(Version).zip" />
         <RemoveDir Directories="$(TargetDir)..\Release" />
     </Target>
 </Project>

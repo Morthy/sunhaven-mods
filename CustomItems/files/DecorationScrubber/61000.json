@@ -1,0 +1,25 @@
+{
+	"id": 61000,
+	"name": "Ghost Decoration Scrubber",
+	"description": "",
+	"helpDescription": "Equip to see ghost decoration tiles nearby.",
+	"useDescription": "Left click to remove all ghost decoration tiles in the current scene.",
+	"stackSize": 999,
+	"canSell": true,
+	"canTrade": true,
+	"canTrash": true,
+	"goldSellPrice": 300,
+	"orbsSellPrice": 300,
+	"ticketSellPrice": 300,
+	"category": 1,
+	"rarity": 1,
+	"shopEntries": [
+		{
+			"shop": "GeneralMerchantTable",
+			"amount": 1,
+			"costGold": 0,
+			"costTickets": 0,
+			"costOrbs": 0
+		}
+	]
+}

@@ -8,6 +8,7 @@ using Morthy.Util;
 using UnityEngine;
 using Wish;
 using HarmonyLib;
+using JetBrains.Annotations;
 using PSS;
 using TinyJson;
 using Object = UnityEngine.Object;
@@ -74,9 +75,13 @@ public class CustomItems
                 {
                     CustomFurniture.CreateFurniture(folder, definition);
                 }
+                else if (!definition.type.IsNullOrWhiteSpace())
+                {
+                    CreateItem(folder, definition, definition.type);
+                }
                 else
                 {
-                    CreateItem(folder, definition);
+                    CreateItem(folder, definition, null);
                 }
 
             }
@@ -157,7 +162,7 @@ public class CustomItems
         return ItemInfoDatabase.Instance.allItemSellInfos.ContainsKey(itemId) && !ItemInfoDatabase.Instance.allItemSellInfos[itemId].name.Equals(customName);
     }
 
-    public static ItemData CreateItem(string folder, ItemDefinition data)
+    public static ItemData CreateItem(string folder, ItemDefinition data, [CanBeNull] string useItemType)
     {
         var item = ScriptableObject.CreateInstance<ItemData>();
 
@@ -182,14 +187,9 @@ public class CustomItems
 
         if (IsExistingInternalItem(item.id, item.name))
         {
-            throw new Exception($"Failed to create modded item with ID {itemId} because the ID is in use by Sun Haven itself.");
+            throw new Exception($"Failed to create modded item with ID {itemId} because the ID is in use by another item.");
         }
 
-        if (HasCustomItemWithID(item.id) && !GetCustomItem(itemId).name.Equals(item.name))
-        {
-            throw new Exception($"Failed to create modded item with ID {itemId} because an existing modded item exists with that ID.");
-        }
-        
         var iconPath = GetFilePath(Path.Combine(folder, data.image ?? $"{itemId}.png"));
         if (!File.Exists(iconPath))
         {
@@ -237,6 +237,56 @@ public class CustomItems
 
         Plugin.logger.LogInfo($"Created custom item {itemId} with name {item.name}");
 
+        if (useItemType != null)
+        {
+            var useItemTypeType = Type.GetType(useItemType);
+
+            if (useItemTypeType == null)
+            {
+                throw new Exception($"Failed to find type {useItemType}");
+            }
+
+            item.useItem = (UseItem)new GameObject($"{item.name} useitem").AddComponent(useItemTypeType);
+            Object.DontDestroyOnLoad(item.useItem);
+            
+            Plugin.logger.LogInfo(data.useItemProps.GetType());
+
+            if (data.useItemProps != null)
+            {
+                var traverse = Traverse.Create(item.useItem);
+                
+                foreach (var dataUseItemProp in data.useItemProps)
+                {
+                    if (dataUseItemProp.Value is Dictionary<string, object> dataInfo && dataInfo.TryGetValue("type", out var type) && dataInfo.TryGetValue("args", out var args))
+                    {
+                        if (type is not string typeString)
+                        {
+                            throw new Exception("Type must be a string");
+                        }
+
+                        if (args is not List<object> argsList)
+                        {
+                            throw new Exception("Args must be an array");
+                        }
+
+                        var typeType = Type.GetType(typeString);
+
+                        if (typeType == null)
+                        {
+                            throw new Exception($"Failed to find type {type}");
+                        }
+                        argsList = argsList.Select(o => o is double ? Convert.ToSingle(o) : o).ToList();
+                        var x = Activator.CreateInstance(typeType, argsList.ToArray());
+                        traverse.Field(dataUseItemProp.Key).SetValue(x);
+                    }
+                    else
+                    {
+                        traverse.Field(dataUseItemProp.Key).SetValue(dataUseItemProp.Value is double ? Convert.ToSingle(dataUseItemProp.Value) : dataUseItemProp.Value);
+                    }
+                }
+            }
+        }
+
         if (data.shopEntries is not null)
         {
             foreach (var entry in data.shopEntries)
@@ -256,7 +306,6 @@ public class CustomItems
 
                 RecipeAdditions[entry.list][item.id] = entry;
                 Plugin.logger.LogInfo($"Registered {item.name} to be added to crafting table {entry.list}");
-                
             }
         }
         
@@ -273,7 +322,7 @@ public class CustomItems
         var customItemsFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
         var one = Directory.GetFiles(customItemsFolder!, "*.json", SearchOption.AllDirectories);
-        var two  = Directory.GetFiles(Path.Combine(customItemsFolder, ".."), "*.item.json", SearchOption.AllDirectories);
+        var two  = Directory.GetFiles(BepInEx.Paths.PluginPath, "*.item.json", SearchOption.AllDirectories);
         return one.Concat(two).ToArray();
     }
 

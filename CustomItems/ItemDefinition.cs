@@ -22,6 +22,7 @@ public class ItemDefinition
     public int ticketSellPrice;
     public int category;
     public int rarity;
+    public Dictionary<string, object> useItemProps;
     [CanBeNull] public DecorationDefinition decoration;
     [CanBeNull] public List<ShopItemDefinition> shopEntries;
     [CanBeNull] public List<RecipeDefinition> recipes;
