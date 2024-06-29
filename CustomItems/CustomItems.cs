@@ -10,6 +10,7 @@ using Wish;
 using HarmonyLib;
 using JetBrains.Annotations;
 using PSS;
+using Sirenix.Serialization;
 using TinyJson;
 using Object = UnityEngine.Object;
 
@@ -136,6 +137,11 @@ public class CustomItems
             characterProgressIDs = new List<Progress>(),
             worldProgressIDs = new List<Progress>(),
         };
+
+        if (definition.costItemId != 0)
+        {
+            Database.GetData<ItemData>(definition.costItemId, data => info.itemToUseAsCurrency = data );
+        }
         
         MerchantAdditions[definition.shop].Add(info);
         Plugin.logger.LogInfo($"Registered {item.name} to be added to {definition.shop}");
@@ -239,52 +245,7 @@ public class CustomItems
 
         if (useItemType != null)
         {
-            var useItemTypeType = Type.GetType(useItemType);
-
-            if (useItemTypeType == null)
-            {
-                throw new Exception($"Failed to find type {useItemType}");
-            }
-
-            item.useItem = (UseItem)new GameObject($"{item.name} useitem").AddComponent(useItemTypeType);
-            Object.DontDestroyOnLoad(item.useItem);
-            
-            Plugin.logger.LogInfo(data.useItemProps.GetType());
-
-            if (data.useItemProps != null)
-            {
-                var traverse = Traverse.Create(item.useItem);
-                
-                foreach (var dataUseItemProp in data.useItemProps)
-                {
-                    if (dataUseItemProp.Value is Dictionary<string, object> dataInfo && dataInfo.TryGetValue("type", out var type) && dataInfo.TryGetValue("args", out var args))
-                    {
-                        if (type is not string typeString)
-                        {
-                            throw new Exception("Type must be a string");
-                        }
-
-                        if (args is not List<object> argsList)
-                        {
-                            throw new Exception("Args must be an array");
-                        }
-
-                        var typeType = Type.GetType(typeString);
-
-                        if (typeType == null)
-                        {
-                            throw new Exception($"Failed to find type {type}");
-                        }
-                        argsList = argsList.Select(o => o is double ? Convert.ToSingle(o) : o).ToList();
-                        var x = Activator.CreateInstance(typeType, argsList.ToArray());
-                        traverse.Field(dataUseItemProp.Key).SetValue(x);
-                    }
-                    else
-                    {
-                        traverse.Field(dataUseItemProp.Key).SetValue(dataUseItemProp.Value is double ? Convert.ToSingle(dataUseItemProp.Value) : dataUseItemProp.Value);
-                    }
-                }
-            }
+            AddCustomUseType(data, useItemType, item);
         }
 
         if (data.shopEntries is not null)
@@ -310,6 +271,54 @@ public class CustomItems
         }
         
         return item;
+    }
+
+    private static void AddCustomUseType(ItemDefinition data, string useItemType, ItemData item)
+    {
+        var useItemTypeType = Type.GetType(useItemType);
+
+        if (useItemTypeType == null)
+        {
+            throw new Exception($"Failed to find type {useItemType}");
+        }
+
+        item.useItem = (UseItem)new GameObject($"{item.name} useitem").AddComponent(useItemTypeType);
+        Object.DontDestroyOnLoad(item.useItem);
+        
+        if (data.useItemProps == null) return;
+        
+        var traverse = Traverse.Create(item.useItem);
+
+        foreach (var dataUseItemProp in data.useItemProps)
+        {
+            if (dataUseItemProp.Value is Dictionary<string, object> dataInfo && dataInfo.TryGetValue("type", out var type) && dataInfo.TryGetValue("args", out var args))
+            {
+                if (type is not string typeString)
+                {
+                    throw new Exception("Type must be a string");
+                }
+
+                if (args is not List<object> argsList)
+                {
+                    throw new Exception("Args must be an array");
+                }
+
+                var typeType = Type.GetType(typeString);
+
+                if (typeType == null)
+                {
+                    throw new Exception($"Failed to find type {type}");
+                }
+
+                argsList = argsList.Select(o => o is double ? Convert.ToSingle(o) : o).ToList();
+                var x = Activator.CreateInstance(typeType, argsList.ToArray());
+                traverse.Field(dataUseItemProp.Key).SetValue(x);
+            }
+            else
+            {
+                traverse.Field(dataUseItemProp.Key).SetValue(dataUseItemProp.Value is double ? Convert.ToSingle(dataUseItemProp.Value) : dataUseItemProp.Value);
+            }
+        }
     }
 
     public static string GetFilePath(string path)
@@ -355,16 +364,24 @@ public class CustomItems
             
             Database.GetData<ItemData>(entry.Key, data =>
             {
-                recipe.output2 = new SerializedItemDataNamedAmount() { id = entry.Key, name = data.name, amount = 1 };
+                recipe.output2 = new SerializedItemDataNamedAmount() { id = entry.Key, name = data.name, amount = entry.Value.amount };
             });
 
             recipe.input2 = new List<SerializedItemDataNamedAmount>();
+            var tmpItems = new Dictionary<int, ItemData>();
 
             foreach (var inputDefinition in entry.Value.inputs)
             {
                 Database.GetData<ItemData>(inputDefinition.id, data =>
                 {
-                    recipe.input2.Add(new SerializedItemDataNamedAmount() { id = inputDefinition.id, name = data.name, amount = inputDefinition.amount });
+                    tmpItems[inputDefinition.id] = data;
+
+                    if (tmpItems.Count != entry.Value.inputs.Count) return;
+                    
+                    foreach (var inputDefinition in entry.Value.inputs)
+                    {
+                        recipe.input2.Add(new SerializedItemDataNamedAmount() { id = inputDefinition.id, name = tmpItems[inputDefinition.id].name, amount = inputDefinition.amount });
+                    }
                 });
             }
 

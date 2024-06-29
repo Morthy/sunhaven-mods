@@ -60,6 +60,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomItems", "CustomItems\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetterClock", "BetterClock\BetterClock.csproj", "{BCB53BBB-28E9-4510-814D-93EFD620FDA8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeleportItems", "TeleportItems\TeleportItems.csproj", "{94E85601-DAAE-42CD-BEEB-BA3660943AA3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -186,5 +188,9 @@ Global
 		{BCB53BBB-28E9-4510-814D-93EFD620FDA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BCB53BBB-28E9-4510-814D-93EFD620FDA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BCB53BBB-28E9-4510-814D-93EFD620FDA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94E85601-DAAE-42CD-BEEB-BA3660943AA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94E85601-DAAE-42CD-BEEB-BA3660943AA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94E85601-DAAE-42CD-BEEB-BA3660943AA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94E85601-DAAE-42CD-BEEB-BA3660943AA3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

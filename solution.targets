@@ -51,7 +51,7 @@
             <Private>false</Private>
         </Reference>
         <Reference Include="PSS">
-            <HintPath>$(ManagedDataPath)\PSS.Database.dll</HintPath>
+            <HintPath>..\lib2\PSS.Database.dll</HintPath>
             <Private>false</Private>
         </Reference>
         <Reference Include="UnityEngine.UI">
@@ -110,6 +110,7 @@
         <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
         <PackageReference Include="UnityEngine.Modules" Version="2019.3.15" IncludeAssets="compile" />
     </ItemGroup>
+    
 
     <!-- Copy to plugins folder and zip -->
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
@@ -126,7 +127,7 @@
         </ItemGroup>
         <Copy SourceFiles="@(AllFiles)" DestinationFolder="$(GamePath)\BepInEx\plugins\$(PluginReleasePath)\%(RecursiveDir)"></Copy>
         <Delete Files="$(ProjectDir)\bin\$(TargetName)-$(Version).zip" />
-        <Copy SourceFiles="@(AllFiles)" DestinationFolder="$(TargetDir)..\Release\$(PluginReleasePath)%(RecursiveDir)"></Copy>
+        <Copy SourceFiles="@(AllFiles)" DestinationFolder="$(TargetDir)..\Release\$(PluginReleasePath)\%(RecursiveDir)"></Copy>
         <ZipDirectory SourceDirectory="$(TargetDir)..\Release" DestinationFile="$(ProjectDir)\bin\$(TargetName)-$(Version).zip" />
         <RemoveDir Directories="$(TargetDir)..\Release" />
     </Target>

@@ -7,4 +7,5 @@ public class RecipeDefinition
     public string list;
     public float hours;
     public List<RecipeInputDefinition> inputs;
+    public int amount = 1;
 }

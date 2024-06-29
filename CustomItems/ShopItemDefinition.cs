@@ -7,5 +7,6 @@ public class ShopItemDefinition
     public int costGold;
     public int costTickets;
     public int costOrbs;
+    public int costItemId;
 
 }
