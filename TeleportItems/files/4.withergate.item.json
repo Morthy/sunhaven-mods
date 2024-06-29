@@ -1,0 +1,43 @@
+﻿{
+	"id": 61004,
+	"type": "TeleportItems.TeleportItem, TeleportItems",
+	"name": "Withergate Teleporter",
+	"image": "withergate.png",
+	"description": "A mysterious stone that hums and pulsates when you look at it, as if it's anxious to move.",
+	"helpDescription": "Directly teleports you to your Withergate Farm",
+	"useDescription": "(Left click to use)",
+	"stackSize": 999,
+	"canSell": true,
+	"canTrade": true,
+	"canTrash": true,
+	"goldSellPrice": 0,
+	"orbSellPrice": 0,
+	"ticketSellPrice": 10,
+	"category": 1,
+	"rarity": 4,
+	"useItemProps": {
+		"teleportScene": "WithergateRooftopFarm",
+		"teleportLocation": {"type": "UnityEngine.Vector2, UnityEngine", "args": [138.0, 87.5]}
+	},
+	"recipes": [
+		{
+			"list": "RecipeList_Monster Anvil",
+			"hours": 1,
+			"amount": 5,
+			"inputs": [
+				{"id": 1117, "amount": 2},
+				{"id": 60251, "amount": 10},
+				{"id": 60235, "amount": 5}
+			]
+		}
+	],
+	"shopEntries": [
+		{
+			"shop": "WithergateGeneralStoreMerchantTable",
+			"amount": 1,
+			"costGold": 0,
+			"costTickets": 100,
+			"costOrbs": 0
+		}
+	]
+}

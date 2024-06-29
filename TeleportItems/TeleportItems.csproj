@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+    <PluginReleasePath>TeleportItems</PluginReleasePath>
+  </PropertyGroup>
+  
+
+  <ItemGroup>
+    <EmbeddedResource Include="img\*.png" />
+  </ItemGroup>
+  
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.BaseLib" Version="5.4.20" />
+  </ItemGroup>
+  
+
+  <ItemGroup>
+    <None Update="files\brinestone.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="files\2.brinestone.item.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="files\nelvari.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="files\3.nelvari.item.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="files\sunhaven.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="files\1.sunhaven.item.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="files\withergate.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="files\4.withergate.item.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Import Project="$(SolutionDir)\private.targets" />
+  <Import Project="$(SolutionDir)\solution.targets" />
+
+</Project>

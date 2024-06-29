@@ -1,0 +1,44 @@
+﻿{
+	"id": 61005,
+	"type": "TeleportItems.TeleportItem, TeleportItems",
+	"name": "Brinestone Teleporter",
+	"image": "brinestone.png",
+	"description": "A mysterious stone that hums and pulsates when you look at it, as if it's anxious to move.",
+	"helpDescription": "Directly teleports you to Brinestone Deeps",
+	"useDescription": "(Left click to use)",
+	"stackSize": 999,
+	"canSell": true,
+	"canTrade": true,
+	"canTrash": true,
+	"goldSellPrice": 100,
+	"orbSellPrice": 0,
+	"ticketSellPrice": 0,
+	"category": 1,
+	"rarity": 2,
+	"useItemProps": {
+		"teleportScene": "UnderwaterCity",
+		"teleportLocation": {"type": "UnityEngine.Vector2, UnityEngine", "args": [290.8691, 361.1548]}
+	},
+	"recipes": [
+		{
+			"list": "RecipeList_Anvil",
+			"hours": 1,
+			"amount": 5,
+			"inputs": [
+				{"id": 1201, "amount": 1},
+				{"id": 60280, "amount": 5},
+				{"id": 20035 , "amount": 1}
+			]
+		}
+	],
+	"shopEntries": [
+		{
+			"shop": "BSDGeneralStoreMerchantTable",
+			"amount": 1,
+			"costGold": 100,
+			"costTickets": 0,
+			"costOrbs": 0,
+			"costItemId": 60014
+		}
+	]
+}

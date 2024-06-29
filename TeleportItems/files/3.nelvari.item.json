@@ -1,0 +1,43 @@
+﻿{
+	"id": 61003,
+	"type": "TeleportItems.TeleportItem, TeleportItems",
+	"name": "Nel'Vari Teleporter",
+	"image": "nelvari.png",
+	"description": "A mysterious stone that hums and pulsates when you look at it, as if it's anxious to move.",
+	"helpDescription": "Directly teleports you to your Nel'Vari Farm",
+	"useDescription": "(Left click to use)",
+	"stackSize": 999,
+	"canSell": true,
+	"canTrade": true,
+	"canTrash": true,
+	"goldSellPrice": 0,
+	"orbSellPrice": 10,
+	"ticketSellPrice": 0,
+	"category": 1,
+	"rarity": 3,
+	"useItemProps": {
+		"teleportScene": "NelvariFarm",
+		"teleportLocation": {"type": "UnityEngine.Vector2, UnityEngine", "args": [136.0, 100.0]}
+	},
+	"recipes": [
+		{
+			"list": "RecipeList_Mana Anvil",
+			"hours": 1,
+			"amount": 5,
+			"inputs": [
+				{"id": 1123, "amount": 2},
+				{"id": 2107, "amount": 10},
+				{"id": 60250, "amount": 1}
+			]
+		}
+	],
+	"shopEntries": [
+		{
+			"shop": "NelvariGeneralStoreMerchantTable",
+			"amount": 1,
+			"costGold": 0,
+			"costTickets": 0,
+			"costOrbs": 100
+		}
+	]	
+}
