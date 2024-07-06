@@ -98,6 +98,10 @@
             <HintPath>$(ManagedDataPath)\I2Localization.dll</HintPath>
             <Private>false</Private>
         </Reference>
+        <Reference Include="QFSW.QC">
+            <HintPath>$(ManagedDataPath)\QFSW.QC.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
     </ItemGroup>
 
     <ItemGroup>

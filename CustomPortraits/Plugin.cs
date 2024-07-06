@@ -2,12 +2,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using DG.Tweening;
 using HarmonyLib;
+using QFSW.QC;
 using UnityEngine;
 using UnityEngine.UI;
 using Wish;
@@ -22,8 +25,9 @@ public class Plugin : BaseUnityPlugin
     public static Plugin Instance;
 
     private static Dictionary<string, Texture2D> Portraits = new();
+    private static Dictionary<string, PortraitConfig> PortraitConfigs = new();
     private static Dictionary<string, Sprite> PortraitSpriteCache = new();
-    
+
     private static int DebugEmoteIndex;
     private static bool IsCustomBust;
 
@@ -39,6 +43,16 @@ public class Plugin : BaseUnityPlugin
         harmony.PatchAll();
         LoadPortraits();
         Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} v{PluginInfo.PLUGIN_VERSION} is loaded!");
+
+        var assemblies = Traverse.Create(typeof(QuantumConsoleProcessor)).Field("_loadedAssemblies").GetValue<Assembly[]>();
+
+        if (!assemblies.Contains(Assembly.GetExecutingAssembly()))
+        {
+            var newAssemblies = assemblies.ToList();
+            newAssemblies.Add(Assembly.GetExecutingAssembly());
+            Traverse.Create(typeof(QuantumConsoleProcessor)).Field("_loadedAssemblies").SetValue(newAssemblies.ToArray());
+        }
+        
     }
 
     public void LoadPortraits()
@@ -54,9 +68,22 @@ public class Plugin : BaseUnityPlugin
         foreach (var file in Directory.GetFiles(path, "*.png", SearchOption.AllDirectories))
         {
             Portraits.Add(Path.GetFileNameWithoutExtension(file), LoadTexture(file));
+
+            var jsonPath = Path.Combine(Path.GetDirectoryName(file), Path.GetFileNameWithoutExtension(file) + ".json");
+            if (File.Exists(jsonPath))
+            {
+                var def = JsonUtility.FromJson<PortraitConfig>(File.ReadAllText(jsonPath));
+                PortraitConfigs.Add(Path.GetFileNameWithoutExtension(file), def);
+            }
+
         }
-        
-        logger.LogInfo($"Loaded {Portraits.Count} custom portraits");
+
+        logger.LogInfo($"Loaded {Portraits.Count} custom portraits and {PortraitConfigs.Count} configs");
+    }
+
+    public static PortraitConfig GetPortraitConfig(string key)
+    {
+        return PortraitConfigs.TryGetValue(key, out PortraitConfig config) ? config : new PortraitConfig();
     }
 
     private Texture2D LoadTexture(string path)
@@ -83,7 +110,9 @@ public class Plugin : BaseUnityPlugin
             var cacheKey = textureKey + "_" + index;
             if (!PortraitSpriteCache.TryGetValue(cacheKey, out Sprite sprite))
             {
-                sprite = Sprite.Create(texture, new Rect(index * texture.width / numSprites, 0, texture.width / numSprites, texture.height), new Vector2(0.5f, 0.5f), (float)Math.Round(texture.height / 211f * 24));
+                var config = GetPortraitConfig(textureKey);
+                
+                sprite = Sprite.Create(texture, new Rect(index * texture.width / numSprites, 0, texture.width / numSprites, texture.height), new Vector2(0.5f, 0.5f), (float)Math.Round(texture.height / (211f * config.scale) * 24));
                 sprite.name = $"Custom Portrait {npcName} {season} {index}";
                 PortraitSpriteCache[cacheKey] = sprite;
             }
@@ -97,6 +126,46 @@ public class Plugin : BaseUnityPlugin
     [HarmonyPatch]
     class Patches
     {
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(DialogueController), "SetDialogueBustVisualsOptimized", typeof(Vector2), typeof(string), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool))]
+        public static bool SetDialogueBustVisualsOptimized(ref DialogueController __instance, 
+            ref Image ____bust,
+            Vector2 offset,
+            string name = "",
+            bool small = false,
+            bool isMarriageBust = false,
+            bool isSwimsuitBust = false,
+            bool hideName = false,
+            bool isRefreshBust = true)
+        {
+            try
+            {
+                var season = SingletonBehaviour<DayCycle>.Instance.Season.ToString();
+                var realName = name;
+
+                if (realName.Contains("+"))
+                {
+                    realName = realName.Split('+')[0];
+                }
+
+                var key = $"{realName}_{season}";
+
+                if (Portraits.ContainsKey(key))
+                {
+                    __instance.SetDialogueBustVisualsOptimized(name, small, isMarriageBust, isSwimsuitBust, hideName, isRefreshBust);
+                    var config = GetPortraitConfig(key);
+                    ____bust.GetComponent<RectTransform>().anchoredPosition = new Vector2(512f + config.offsetX, 0.0f + config.offsetY);
+                    return false;
+                }
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e);
+            }
+            
+            return true;
+        }
+        
         [HarmonyPrefix]
         [HarmonyPatch(typeof(DialogueController), "LoadBust")]
         public static bool LoadBust(bool isMarriageBust, bool isSwimsuitBust, ref string ___npcName, ref Image ____bust)
@@ -202,20 +271,23 @@ public class Plugin : BaseUnityPlugin
         [HarmonyPatch(typeof(Player), "Update")]
         public static void PlayerUpdate(ref Player __instance)
         {
-            if (!__instance.IsOwner || !ModAuthor.Value)
+            try
             {
-                return;
-            }
+                if (!__instance.IsOwner || !ModAuthor.Value)
+                {
+                    return;
+                }
 
-            if (Input.GetKey(KeyCode.LeftControl))
-            {
+                if (!Input.GetKey(KeyCode.LeftControl)) return;
+
                 if (Input.GetKeyDown(KeyCode.Z) && DialogueController.Instance.DialogueOnGoing)
                 {
                     if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.LeftShift))
                     {
                         DebugEmoteIndex = 0;
                     }
-                    else {
+                    else
+                    {
                         DebugEmoteIndex++;
 
                         if (DebugEmoteIndex > 5)
@@ -223,18 +295,24 @@ public class Plugin : BaseUnityPlugin
                             DebugEmoteIndex = 0;
                         }
                     }
-                    
+
                     var npcName = Traverse.Create(DialogueController.Instance).Field("npcName").GetValue<string>();
 
                     if (DebugEmoteIndex == 0)
                     {
-                        DialogueController.Instance.SetDialogueBustVisualsOptimized(npcName, false, Input.GetKey(KeyCode.LeftAlt), Input.GetKey(KeyCode.LeftShift));
+                        foreach (var npcai in Resources.FindObjectsOfTypeAll<NPCAI>())
+                        {
+                            if (npcai.OriginalName != npcName) continue;
+
+                            DialogueController.Instance.SetDialogueBustVisualsOptimized(npcai._bustOffset, npcName, false, Input.GetKey(KeyCode.LeftAlt), Input.GetKey(KeyCode.LeftShift));
+                            break;
+                        }
                     }
                     else
                     {
                         DialogueController.Instance.Emote((EmoteType)Enum.GetValues(typeof(EmoteType)).GetValue(DebugEmoteIndex), false);
                     }
-                
+
                 }
 
                 if (Input.GetKeyDown(KeyCode.X))
@@ -246,16 +324,21 @@ public class Plugin : BaseUnityPlugin
                     else
                     {
                         Portraits.Clear();
+                        PortraitConfigs.Clear();
                         PortraitSpriteCache.Clear();
                         Instance.LoadPortraits();
-                    
-                        MethodInfo dynMethod = typeof(DialogueController).GetMethod("Awake", 
+
+                        MethodInfo dynMethod = typeof(DialogueController).GetMethod("Awake",
                             BindingFlags.NonPublic | BindingFlags.Instance);
-                        dynMethod.Invoke(DialogueController.Instance, new object[] {});
+                        dynMethod.Invoke(DialogueController.Instance, new object[] { });
 
                         NotificationStack.Instance.SendNotification("Custom Portraits reloaded");
                     }
                 }
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e);
             }
         }
     }

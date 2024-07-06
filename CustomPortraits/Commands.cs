@@ -15,7 +15,7 @@ public static class Commands
 
         foreach (var npcai in Resources.FindObjectsOfTypeAll<NPCAI>())
         {
-            if (npcai.NPCName == npc)
+            if (npcai.OriginalName == npc)
             {
                 npcai.Interact(0);
                 return;
