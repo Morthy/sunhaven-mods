@@ -1,7 +1,6 @@
 ﻿.idea
 private.targets
-lib
-lib2
+Managed
 *.DotSettings.user
 */bin
 */obj
