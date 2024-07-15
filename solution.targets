@@ -29,7 +29,7 @@
 
     <PropertyGroup>
         <BepInExPath>$(GamePath)\BepInEx</BepInExPath>
-        <ManagedDataPath>$(GamePath)\Sun Haven_Data\Managed</ManagedDataPath>
+        <ManagedDataPath>..\Managed</ManagedDataPath>
         <UnityPath>$(GamePath)\Sun Haven_Data\Managed</UnityPath>
     </PropertyGroup>
 
@@ -42,16 +42,23 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
+        <PackageReference Include="BepInEx.Core" Version="5.*" />
+        <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
+        <PackageReference Include="UnityEngine.Modules" Version="2019.3.15" IncludeAssets="compile" />
+    </ItemGroup>
+
+    <ItemGroup>
         <Reference Include="Sirenix.Serialization">
             <HintPath>$(ManagedDataPath)\Sirenix.Serialization.dll</HintPath>
             <Private>false</Private>
         </Reference>
-        <Reference Include="SunHaven.Core">
+        <Reference Include="SunHaven.Core" Publicize="true">
             <HintPath>$(ManagedDataPath)\SunHaven.Core.dll</HintPath>
             <Private>false</Private>
         </Reference>
-        <Reference Include="PSS">
-            <HintPath>..\lib2\PSS.Database.dll</HintPath>
+        <Reference Include="PSS" Publicize="true">
+            <HintPath>$(ManagedDataPath)\PSS.Database.dll</HintPath>
             <Private>false</Private>
         </Reference>
         <Reference Include="UnityEngine.UI">
@@ -102,19 +109,14 @@
             <HintPath>$(ManagedDataPath)\QFSW.QC.dll</HintPath>
             <Private>false</Private>
         </Reference>
+
+        <Publicize Include="SunHaven.Core" />
     </ItemGroup>
 
     <ItemGroup>
         <None Include="$(ProjectDir)files\**" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
-        <PackageReference Include="BepInEx.Core" Version="5.*" />
-        <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
-        <PackageReference Include="UnityEngine.Modules" Version="2019.3.15" IncludeAssets="compile" />
-    </ItemGroup>
-    
+       
 
     <!-- Copy to plugins folder and zip -->
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
