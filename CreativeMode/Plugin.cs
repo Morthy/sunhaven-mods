@@ -1,18 +1,24 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using PSS;
+using QFSW.QC;
 using TMPro;
 using UnityEngine;
 using Wish;
+using Tree = Wish.Tree;
 
 namespace CreativeMode;
 
 [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
 [BepInDependency("CustomItems", "0.2.2")]
+[CommandPrefix("/")]
 public class Plugin : BaseUnityPlugin
 {
     private readonly Harmony _harmony = new (PluginInfo.PLUGIN_GUID);
@@ -83,59 +89,114 @@ public class Plugin : BaseUnityPlugin
         return DecorationCategorization.Categories.Where(a => a.Value.Contains(id)).Aggregate("", (current, a) => current + (a.Key + ","));
     }
 
-    /*
-    private static void Debug()
+    
+    public static IEnumerator Debug()
     {
-        var txt = "";
+        var lines = new List<string>();
+        var total = 0;
+        var done = 0;
         var dbg = "";
-            
-        foreach (var i in ItemDatabase.itemDatas.Values)
+
+        foreach (var x in ItemInfoDatabase.Instance.allItemSellInfos)
         {
-            if (i == null || i.useItem is null || DebugIgnoreItems.Contains(i.id))
+            var itemId = x.Key;
+            
+            if (DebugIgnoreItems.Contains(itemId))
             {
                 continue;
             }
-
-            var name = DebugGetItemIDName(i.id);
-            var placeableType = i.useItem.GetType();
             
-            var itemName = i.name;
 
-            if (i.isDLCItem)
+            if (itemId == 10924)
             {
-                itemName = itemName += " (DLC)";
+                continue;
             }
-                
-            if (i.useItem is Placeable)
+            
+            total++;
+            
+            Database.GetData<ItemData>(itemId, i =>
             {
-                var decoration = Traverse.Create(i.useItem).Field("_decoration").GetValue<Decoration>();
-                if (Traverse.Create(i.useItem).Field("useAbleByPlayer").GetValue<bool>() == true)
-                {
-                    var decorationType = decoration != null ? decoration.GetType().ToString() : "";
+                var name = DebugGetItemIDName(i.id);
 
-                    if (decoration is HungryMonster or Forageable or OneTimeChest or Tree or ForageTree or TreasureChest)
+                if (!i.useItem)
+                {
+                    done++;
+                    return;
+                }
+                
+                var placeableType = i.useItem.GetType();
+
+                var itemName = i.name;
+
+                if (i.isDLCItem)
+                {
+                    itemName = itemName += " (DLC)";
+                }
+                
+                if (i.useItem is Placeable)
+                {
+                    var decoration = Traverse.Create(i.useItem).Field("_decoration").GetValue<Decoration>();
+                    if (Traverse.Create(i.useItem).Field("useAbleByPlayer").GetValue<bool>() == true)
                     {
-                        continue;
+                        var decorationType = decoration != null ? decoration.GetType().ToString() : "";
+
+                        if (decoration is HungryMonster or Forageable or OneTimeChest or Tree or ForageTree or TreasureChest)
+                        {
+                            done++;
+                            return;
+                        }
+                        
+                        lines.Add($"{i.id},{itemName},ItemID.{name},{placeableType},{decorationType}," + DebugGetCategories(i.id));
                     }
-                    txt += $"{i.id},{itemName},ItemID.{name},{placeableType},{decorationType}," + DebugGetCategories(i.id) + "\n";
+
+                }
+                else if (i.useItem is TilePlaceable or Seeds or AnimalSpawnItem or PetSpawnItem)
+                {
+                    lines.Add($"{i.id},{itemName},ItemID.{name},{placeableType},," + DebugGetCategories(i.id));
                 }
 
-            }
-            else if (i.useItem is TilePlaceable or Seeds or AnimalSpawnItem or PetSpawnItem)
+                if (i is PetData)
+                {
+                    dbg += $"ItemID.{name},\n";
+                }
+
+                done++;
+                
+            }, () =>
             {
-                txt += $"{i.id},{itemName},ItemID.{name},{placeableType},," + DebugGetCategories(i.id) + "\n";
-            }
-            
-            
-            if (i is PetData)
-            {
-                dbg += $"ItemID.{name},\n";
-            }
+                done++;
+            });
         }
         
-        File.WriteAllText("C:\\Users\\morth\\Desktop\\items.csv", txt);
+        while (total != done)
+        {
+            logger.LogInfo($"{done}/{total}");
+            yield return new WaitForSecondsRealtime(0.5f);
+        }
+
+
+        File.WriteAllText("C:\\Users\\morth\\Desktop\\items.csv", String.Join("\n", lines.ToArray()));
     }
-    */
+    
+    public static void StartDebug()
+    {
+        MainMenuController.Instance.StartCoroutine(Debug());
+    }
+
+    [Command("cmdumpdlc")]
+    public static void DebugDumpDLCData()
+    {
+        foreach (var x in FindObjectsOfType<DLCMerchants>())
+        {
+            var progress = Traverse.Create(x).Field("Progress").GetValue<Progress>();
+            var shop = x.gameObject.GetComponent<Shop>();
+            var items = Traverse.Create(shop).Field("merchantTable").GetValue<MerchantTable>();
+
+            var itemIDs = (from item in items.startingItems2 select item.id).ToArray();
+
+            logger.LogInfo($"{progress.progressID}: {string.Join(",", itemIDs)}");
+        }
+    }
     
     [HarmonyPatch]
     private class Patches
@@ -154,7 +215,8 @@ public class Plugin : BaseUnityPlugin
             {
                 logger.LogError(e);
             }
-            //Debug();
+            
+            //StartDebug();
         }
         
         [HarmonyPostfix]

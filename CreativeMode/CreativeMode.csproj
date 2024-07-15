@@ -2,8 +2,14 @@
 
   <PropertyGroup>
     <Version>1.3.1</Version>
+    <PluginReleasePath>CreativeMode</PluginReleasePath>
   </PropertyGroup>
-  
+
+  <ItemGroup>
+    <Reference Include="QFSW.QC">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sun Haven\Sun Haven_Data\Managed\QFSW.QC.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 
   <Import Project="$(SolutionDir)\private.targets" />
   <Import Project="$(SolutionDir)\solution.targets" />
