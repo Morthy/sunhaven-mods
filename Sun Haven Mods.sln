@@ -66,6 +66,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FarmScreenshots", "FarmScre
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenameFridgesAndWardrobes", "RenameFridgesAndWardrobes\RenameFridgesAndWardrobes.csproj", "{DB1D749D-5C6F-4332-BC3C-E62837977CE6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WheresMyStuff", "WheresMyStuff\WheresMyStuff.csproj", "{48AABB1C-B497-49E3-AF07-317CA8F3C67D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -204,5 +206,9 @@ Global
 		{DB1D749D-5C6F-4332-BC3C-E62837977CE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB1D749D-5C6F-4332-BC3C-E62837977CE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB1D749D-5C6F-4332-BC3C-E62837977CE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48AABB1C-B497-49E3-AF07-317CA8F3C67D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48AABB1C-B497-49E3-AF07-317CA8F3C67D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48AABB1C-B497-49E3-AF07-317CA8F3C67D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48AABB1C-B497-49E3-AF07-317CA8F3C67D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
