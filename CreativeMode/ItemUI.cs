@@ -35,8 +35,20 @@ public class ItemUI : CustomUI
             return;
         }
         
-        Plugin.logger.LogInfo("Create");
+        Plugin.RequirePurchasing.SettingChanged += delegate(object sender, EventArgs args)
+        {
+            CreatePrefab();
 
+            if (this.gameObject.activeInHierarchy)
+            {
+                Populate();
+            }
+            else
+            {
+                ClearContent();
+            }
+        };
+        
         CreatePrefab();
         
         var bg = this.CreateBg();
@@ -109,9 +121,13 @@ public class ItemUI : CustomUI
         var actualShop = shop.GetComponent<Shop>();
         _itemPrefab = Instantiate(Traverse.Create(actualShop).Field("_buyableItemPrefab").GetValue<BuyableItem>());
         DontDestroyOnLoad(_itemPrefab);
-        _itemPrefab.priceTMP.gameObject.SetActive(false);
-        Destroy(_itemPrefab.transform.Find("Panel/BuyTMP").GetComponent<Localize>());
-        _itemPrefab.transform.Find("Panel/BuyTMP").GetComponent<TextMeshProUGUI>().text = "Get";
+        
+        if (!Plugin.RequirePurchasing.Value)
+        {
+            _itemPrefab.priceTMP.gameObject.SetActive(false);
+            Destroy(_itemPrefab.transform.Find("Panel/BuyTMP").GetComponent<Localize>());
+            _itemPrefab.transform.Find("Panel/BuyTMP").GetComponent<TextMeshProUGUI>().text = "Get";
+        }
 
         RectTransform itemImage = (RectTransform)_itemPrefab.transform.Find("Panel/ItemImage");
         itemImage.GetComponent<Image>().enabled = false;
@@ -171,8 +187,7 @@ public class ItemUI : CustomUI
 
             yield return new WaitForSecondsRealtime(0.001f);
         }
-
-        //_scrollRect.verticalNormalizedPosition = 1f;
+        
         yield return null;
     }
     
@@ -182,11 +197,11 @@ public class ItemUI : CustomUI
         {
             return;
         }
-        
+
         BuyableItem newBuyableItem = Instantiate(_itemPrefab, ScrollRect.content);
         newBuyableItem.itemImage.enabled = false;
         newBuyableItem.itemImage.ShopItem = true;
-        newBuyableItem.itemNameTMP.text = item.name;
+        newBuyableItem.itemNameTMP.text = item.name.Length > 20 ? $"<size=80%>{item.name}</size>" : item.name;
         newBuyableItem.qtyTMP.text = "";
         newBuyableItem.Qty = 9999;
 
@@ -196,16 +211,10 @@ public class ItemUI : CustomUI
             {
                 return;
             }
-
-            if (!Plugin.ShowUnownedDLCItems.Value && itemData.isDLCItem)
-            {
-                Destroy(newBuyableItem.gameObject);
-                return;
-            }
             
-            if (false)
+            if (Plugin.ShowItemIDs.Value)
             {
-                // newBuyableItem.itemNameTMP.text += $" <color=green><size=80%>({item.id})</size></color>";
+                newBuyableItem.itemNameTMP.text += $" <color=green><size=80%>({id})</size></color>";
             }
 
             newBuyableItem.itemImage.Initialize(itemData.GetItem());
@@ -233,19 +242,42 @@ public class ItemUI : CustomUI
             }
             else
             {
-                newBuyableItem.buyButton.onClick.AddListener(() => { Player.Instance.Inventory.AddItem(id, 1, true); });
-
-                newBuyableItem.buy5Button.onClick.AddListener(() => { Player.Instance.Inventory.AddItem(id, 5, true); });
-
-                newBuyableItem.buy20Button.onClick.AddListener(() => { Player.Instance.Inventory.AddItem(id, 20, true); });
+                newBuyableItem.buyButton.onClick.AddListener(() => { TryBuy(id, item, 1); });
+                newBuyableItem.buy5Button.onClick.AddListener(() => { TryBuy(id, item, 5); });
+                newBuyableItem.buy20Button.onClick.AddListener(() => { TryBuy(id, item, 20); });
             }
         });
 
 
-        newBuyableItem.itemToUseAsCurrency = null;
-        newBuyableItem.coinsPrice = 0;
-        newBuyableItem.ticketsPrice = 0;
-        newBuyableItem.orbsPrice = 0;
-        newBuyableItem.priceTMP.text = "";
+        if (!Plugin.RequirePurchasing.Value)
+        {
+            newBuyableItem.itemToUseAsCurrency = null;
+            newBuyableItem.coinsPrice = 0;
+            newBuyableItem.ticketsPrice = 0;
+            newBuyableItem.orbsPrice = 0;
+            newBuyableItem.priceTMP.text = "";
+        }
+        else
+        {
+            newBuyableItem.itemToUseAsCurrency = null;
+            newBuyableItem.coinsPrice = (int)item.sellPrice;
+            newBuyableItem.ticketsPrice = (int)item.ticketSellPrice;
+            newBuyableItem.orbsPrice = (int)item.orbSellPrice;
+            newBuyableItem.DefaultPriceText();
+        }
+    }
+
+    private void TryBuy(int id, ItemSellInfo item, int amount)
+    {
+        if (Plugin.RequirePurchasing.Value)
+        {
+            if (item.sellPrice > 0 && GameSave.Coins < item.sellPrice * amount || item.orbSellPrice > 0 && GameSave.Orbs < item.orbSellPrice * amount || item.ticketSellPrice > 0 && GameSave.Tickets < item.ticketSellPrice * amount)
+                return;
+            Player.Instance.AddMoneyAndRegisterSource(-(int)item.sellPrice * amount, 60101, 1, MoneySource.Exploration, showNotification: true);
+            Player.Instance.AddOrbsAndRegisterSource(-(int)item.orbSellPrice * amount, 60001, 1, MoneySource.Exploration, showNotification: true);
+            Player.Instance.AddTicketsAndRegisterSource((int)item.ticketSellPrice * amount, 60002, 1, MoneySource.Exploration, showNotification: true);
+        }
+        
+        Player.Instance.Inventory.AddItem(id, amount, true);
     }
 }

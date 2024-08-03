@@ -8,7 +8,6 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using PSS;
-using QFSW.QC;
 using TMPro;
 using UnityEngine;
 using Wish;
@@ -18,7 +17,6 @@ namespace CreativeMode;
 
 [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
 [BepInDependency("CustomItems", "0.2.2")]
-[CommandPrefix("/")]
 public class Plugin : BaseUnityPlugin
 {
     private readonly Harmony _harmony = new (PluginInfo.PLUGIN_GUID);
@@ -27,6 +25,8 @@ public class Plugin : BaseUnityPlugin
     private static ConfigEntry<bool> _unlimitedFishingNets;
     public static ConfigEntry<int> CataloguePageSize;
     public static ConfigEntry<bool> ShowUnownedDLCItems;
+    public static ConfigEntry<bool> RequirePurchasing;
+    public static ConfigEntry<bool> ShowItemIDs;
 
     private static readonly List<int> DebugIgnoreItems = new()
     {
@@ -55,6 +55,19 @@ public class Plugin : BaseUnityPlugin
         ItemID.CandyCornMineRockLrg,
         ItemID.ArenaChest,
         ItemID.WaterWheel,
+        ItemID.AnimalFeeder,
+        ItemID.CropTotem,
+        ItemID.BrinestoneDeepsRock1x1_Green,
+        ItemID.BrinestoneDeepsRock2x2_Green,
+        ItemID.BrinestoneDeepsRock1x1_Grey,
+        ItemID.BrinestoneDeepsRock2x2_Grey,
+        ItemID.BrinestoneDeepsRock2x2_Yellow,
+        ItemID.BrinestoneDeepsRock1x1_Yellow,
+        ItemID.KrustyCopperOreNode,
+        ItemID.KrustyRockNode,
+        ItemID.DizzyRockNode,
+        ItemID.SandstoneOreNode,
+        ItemID.LargeSandstoneOreNode,
     };
 
     public static ItemUI ItemUI;
@@ -67,7 +80,11 @@ public class Plugin : BaseUnityPlugin
         _unlimitedFishingNets = Config.Bind("General", "Unlimited fishing nets", true, "Allow unlimited fishing nets on your farms");
         CataloguePageSize = Config.Bind("General", "Catalogue page size", 100, "Number of items to show per page in the catalogue");
         ShowUnownedDLCItems = Config.Bind("General", "Show unowned DLC items", true, "Set to false to hide DLC items you cannot obtain");
-        
+        RequirePurchasing = Config.Bind("General", "Require purchasing", false, "Set to true to require purchasing items instead of getting them for free");
+        ShowItemIDs = Config.Bind("General", "Show Item IDs", false, "Set to true to show item IDs");
+
+        CustomItems.CustomItems.OnCustomItemsAdded += ItemHandler.SetupDecorationCatalogueItem;
+
         Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} v{PluginInfo.PLUGIN_VERSION} is loaded!");
     }
 
@@ -86,7 +103,7 @@ public class Plugin : BaseUnityPlugin
 
     private static string DebugGetCategories(int id)
     {
-        return DecorationCategorization.Categories.Where(a => a.Value.Contains(id)).Aggregate("", (current, a) => current + (a.Key + ","));
+        return DecorationCategorization.GetCategories().Where(a => a.Value.Contains(id)).Aggregate("", (current, a) => current + (a.Key + ","));
     }
 
     
@@ -182,20 +199,20 @@ public class Plugin : BaseUnityPlugin
     {
         MainMenuController.Instance.StartCoroutine(Debug());
     }
-
-    [Command("cmdumpdlc")]
+    
     public static void DebugDumpDLCData()
     {
+        var dbg = "";
         foreach (var x in FindObjectsOfType<DLCMerchants>())
         {
-            var progress = Traverse.Create(x).Field("Progress").GetValue<Progress>();
+            var progress = x.progress;
             var shop = x.gameObject.GetComponent<Shop>();
-            var items = Traverse.Create(shop).Field("merchantTable").GetValue<MerchantTable>();
-
+            var items = shop.merchantTable;
             var itemIDs = (from item in items.startingItems2 select item.id).ToArray();
-
-            logger.LogInfo($"{progress.progressID}: {string.Join(",", itemIDs)}");
+            dbg = itemIDs.Aggregate(dbg, (current, itemId) => current + $"{{ ItemID.{DebugGetItemIDName(itemId)}, \"{progress.progressID}\" }},\n");
         }
+        
+        logger.LogInfo(dbg);
     }
     
     [HarmonyPatch]
@@ -209,7 +226,13 @@ public class Plugin : BaseUnityPlugin
         {
             try
             {
-                ItemHandler.SetupDecorationCatalogueItem();
+                foreach (var itemId in new[] { ItemID.WithergateFurnace, ItemID.WithergateAnvil })
+                {
+                    Database.GetData<ItemData>(itemId, data =>
+                    {
+                        ((Placeable)data.useItem)._decoration.pickaxeable = true;
+                    });
+                }
             }
             catch (Exception e)
             {

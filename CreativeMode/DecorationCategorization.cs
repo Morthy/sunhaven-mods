@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using HarmonyLib;
 using Wish;
 
 namespace CreativeMode;
@@ -9,114 +10,6 @@ public static class DecorationCategorization
 {
     private static List<int> _allItems;
 
-    private static Dictionary<int, string> _dlcAssociation = new()
-    {
-        { ItemID.PirateAnchor, "SeasideDLC" },
-        { ItemID.PirateBed, "SeasideDLC" },
-        { ItemID.PirateCannon, "SeasideDLC" },
-        { ItemID.PirateChair, "SeasideDLC" },
-        { ItemID.PirateChest, "SeasideDLC" },
-        { ItemID.PirateHammock, "SeasideDLC" },
-        { ItemID.PirateTable, "SeasideDLC" },
-        { ItemID.PirateTreasureMap, "SeasideDLC" },
-        { ItemID.PirateWardrobe, "SeasideDLC" },
-        { ItemID.PirateWoodPost, "SeasideDLC" },
-        { ItemID.SeasideBed, "OceanShoreDLC" },
-        { ItemID.SeasideChair, "OceanShoreDLC" },
-        { ItemID.SeasideChest, "OceanShoreDLC" },
-        { ItemID.SeasideEndTable, "OceanShoreDLC" },
-        { ItemID.SeasideLamp, "OceanShoreDLC" },
-        { ItemID.SeasideTable, "OceanShoreDLC" },
-        { ItemID.SeasideWardrobe, "OceanShoreDLC" },
-        { ItemID.BlueSeasideShellRug, "OceanShoreDLC" },
-        { ItemID.BlueSeasideStarfishRug, "OceanShoreDLC" },
-        { ItemID.PinkSeasideShellRug, "OceanShoreDLC" },
-        { ItemID.PinkSeasideStarfishRug, "OceanShoreDLC" },
-        { ItemID.MushroomBed, "MushyDLC" },
-        { ItemID.MushroomBookshelf, "MushyDLC" },
-        { ItemID.MushroomCarpet, "MushyDLC" },
-        { ItemID.MushroomCoatRack, "MushyDLC" },
-        { ItemID.MushroomTable, "MushyDLC" },
-        { ItemID.MushroomEndTable, "MushyDLC" },
-        { ItemID.RedMushroomDecoration, "MushyDLC" },
-        { ItemID.LightBrownMushroomDecoration, "MushyDLC" },
-        { ItemID.Brimmy, "SpookyPetDLC" },
-        { ItemID.Webster, "SpookyPetDLC" },
-        { ItemID.Nevermore, "SpookyPetDLC" },
-        { ItemID.Noire, "SpookyPetDLC" },
-        { ItemID.Fangy, "SpookyPetDLC" },
-        { ItemID.Pips, "CutePetDLC" },
-        { ItemID.Chipper, "CutePetDLC" },
-        { ItemID.Pinkadee, "CutePetDLC" },
-        { ItemID.Ursil, "CutePetDLC" },
-        { ItemID.Sweetie, "CutePetDLC" },
-        { ItemID.Scuttles, "SeasideDLC" },
-        { ItemID.Sam, "SeasideDLC" },
-        { ItemID.Mips, "SeasideDLC" },
-        { ItemID.Booshroom, "MushyDLC" },        
-        // TrickOrTreatDLC
-        { ItemID.Willo, "TrickOrTreatDLC"},
-        { ItemID.SpookyRug, "TrickOrTreatDLC"},
-        { ItemID.SpookyBed, "TrickOrTreatDLC"},
-        { ItemID.SpookyWardrobe, "TrickOrTreatDLC"},
-        { ItemID.SpookyCouch, "TrickOrTreatDLC"},
-        { ItemID.SpookyChair, "TrickOrTreatDLC"},
-        { ItemID.SpookyEndTable, "TrickOrTreatDLC"},
-        { ItemID.SpookyTable, "TrickOrTreatDLC"},
-        { ItemID.SpookyPumpkinCauldron, "TrickOrTreatDLC"},
-        { ItemID.SpookyStackofPumpkins, "TrickOrTreatDLC"},
-        // RockNRollDLC
-        { ItemID.Slash, "RockNRollDLC"},
-        { ItemID.RocknRollCouch, "RockNRollDLC"},
-        { ItemID.RocknRollAmp, "RockNRollDLC"},
-        { ItemID.RocknRollBlackGuitar, "RockNRollDLC"},
-        { ItemID.RocknRollRedGuitar, "RockNRollDLC"},
-        { ItemID.RocknRollWardrobe, "RockNRollDLC"},
-        { ItemID.RocknRollLamp, "RockNRollDLC"},
-        { ItemID.RocknRollGoldRecordAward, "RockNRollDLC"},
-        { ItemID.RocknRollBed, "RockNRollDLC"},
-        { ItemID.RocknRollTable, "RockNRollDLC"},
-        { ItemID.RocknRollEndTable, "RockNRollDLC"},
-        { ItemID.RocknRollBlackRug, "RockNRollDLC"},
-        { ItemID.RocknRollRedRug, "RockNRollDLC"},
-        // FunkyMonkeyDLC
-        { ItemID.Funky, "FunkyMonkeyDLC"},
-        // DreamyRamDLC
-        { ItemID.Daydream, "DreamyRamDLC"},
-        // CyberPopDLC
-        { ItemID.S1FER, "CyberPopDLC"},
-        { ItemID.QU4CK, "CyberPopDLC"},
-        { ItemID.MOUS3, "CyberPopDLC"},
-        { ItemID.Ellis, "CyberPopDLC"},
-        { ItemID.Lewey, "CyberPopDLC"},
-        { ItemID.CyberpopThrone, "CyberPopDLC"},
-        { ItemID.CyberpopBicycle, "CyberPopDLC"},
-        { ItemID.CyberpopHoverBike, "CyberPopDLC"},
-        { ItemID.CyberpopMotorcycle, "CyberPopDLC"},
-        { ItemID.CyberpopBed, "CyberPopDLC"},
-        { ItemID.CyberpopCouch, "CyberPopDLC"},
-        { ItemID.CyberpopStudentChest, "CyberPopDLC"},
-        { ItemID.CyberpopWardrobe, "CyberPopDLC"},
-        { ItemID.CyberpopArcCapacitor, "CyberPopDLC"},
-        { ItemID.CyberpopRecordPlayer, "CyberPopDLC"},
-        { ItemID.CyberpopStudentChair, "CyberPopDLC"},
-        { ItemID.CyberpopGlobe, "CyberPopDLC"},
-        { ItemID.CyberpopDesk, "CyberPopDLC"},
-        { ItemID.CyberpopTable, "CyberPopDLC"},
-        { ItemID.CyberpopRug, "CyberPopDLC"},
-        // SpiritPetalDLC
-        { ItemID.Ixi, "SpiritPetalDLC" },
-        { ItemID.SpiritOrb, "SpiritPetalDLC" },
-        { ItemID.SpiritPetalLamp, "SpiritPetalDLC" },
-        { ItemID.SpiritPetalWardrobe, "SpiritPetalDLC" },
-        { ItemID.SpiritPetalCouch, "SpiritPetalDLC" },
-        { ItemID.SpiritPetalChair, "SpiritPetalDLC" },
-        { ItemID.SpiritPetalEndTable, "SpiritPetalDLC" },
-        { ItemID.SpiritPetalTable, "SpiritPetalDLC" },
-        { ItemID.SpiritPetalRug, "SpiritPetalDLC" },
-        { ItemID.SpiritPetalBed, "SpiritPetalDLC" },
-    };
-
     public static DecorationCategory GetCategoryId(string name)
     {
         return CategoryNames.FirstOrDefault(c => c.Value.Equals(name)).Key;
@@ -124,19 +17,17 @@ public static class DecorationCategorization
 
     public static List<int> GetMatchingItemIds(DecorationCategory category, string search, int offset, int limit)
     {
-        if (category == DecorationCategory.None || !Categories.TryGetValue(category, out var baseItems))
+        if (category == DecorationCategory.None || !GetCategories().TryGetValue(category, out var baseItems))
         {
             baseItems = GetAllItems();
         }
 
         var s = baseItems.Select(s => s);
-
-        /*if (!Plugin.ShowUnownedDLCItems.Value)
+        
+        if (!Plugin.ShowUnownedDLCItems.Value)
         {
-            s = s.Select(i => new { id = i, ItemHandler.GetItem(i).isDLCItem })
-                .Where(arg => !arg.isDLCItem || DecorationCategorization.canUseDlcItem(arg.id))
-                .Select(arg => arg.id);
-        }*/
+            s = s.Where(canUseDlcItem);
+        }
 
         if (!search.Equals(""))
         {
@@ -157,7 +48,7 @@ public static class DecorationCategorization
 
     public static bool canUseDlcItem(int itemId)
     {
-        return _dlcAssociation.ContainsKey(itemId) && GameSave.Instance.GetProgressBoolCharacter(_dlcAssociation[itemId]);
+        return !DLCs.DlcAssociation.ContainsKey(itemId) || GameSave.Instance.GetProgressBoolCharacter(DLCs.DlcAssociation[itemId]);
     }
 
     public static List<int> GetAllItems()
@@ -166,7 +57,7 @@ public static class DecorationCategorization
         {
             var all = new List<int>();
 
-            foreach (var x in Categories.Values)
+            foreach (var x in GetCategories().Values)
             {
                 all.AddRange(x);
             }
@@ -230,6 +121,7 @@ public static class DecorationCategorization
         { DecorationCategory.Rugs, "Rugs/Mats" },
         { DecorationCategory.Scarecrows, "Scarecrows" },
         { DecorationCategory.Seating, "Seating" },
+        { DecorationCategory.Seeds, "Seeds" },
         { DecorationCategory.SellingPortals, "Selling Portals" },
         { DecorationCategory.Statues, "Statues" },
         { DecorationCategory.Storage, "Storage" },
@@ -238,9 +130,21 @@ public static class DecorationCategorization
         { DecorationCategory.Wallpaper, "Wallpaper" },
         { DecorationCategory.Windows, "Windows" },
         { DecorationCategory.Winter, "Winter themed" },
+        { DecorationCategory.CustomItems, "<color=yellow>Modded items</color>"}
     };
+
+    public static Dictionary<DecorationCategory, List<int>> GetCategories()
+    {
+        var categories = BaseCategories;
+        categories[DecorationCategory.DLC] = DLCs.DlcAssociation.Keys.ToList();
+
+        var customItems = Traverse.Create(typeof(CustomItems.CustomItems)).Field("ItemDB").GetValue<Dictionary<int, ItemData>>();
+        categories[DecorationCategory.CustomItems] = customItems.Keys.ToList();
+
+        return categories;
+    }
     
-    public static Dictionary<DecorationCategory, List<int>> Categories = new()
+    private static Dictionary<DecorationCategory, List<int>> BaseCategories = new()
     {
         {
             DecorationCategory.Appliances, new List<int>()
@@ -257,6 +161,16 @@ public static class DecorationCategorization
         {
             DecorationCategory.Beds, new List<int>()
             {
+                ItemID.ChessBed,
+                ItemID.PetBed,
+                ItemID.BloomandDoomBed,
+                ItemID.CelestialRamBed,
+                ItemID.DeepSeaBed,
+                ItemID.TistheSeasonBed,
+                ItemID.SnowDayBed,
+                ItemID.ToyBed,
+                ItemID.StarlightBed,
+                ItemID.PopSensationBed,
                 ItemID.BirthdayBed,
                 ItemID.SpiritPetalBed,
                 ItemID.CyberpopBed,
@@ -307,15 +221,23 @@ public static class DecorationCategorization
                 ItemID.PurpleBookStack,
                 ItemID.Magazines,
                 ItemID.SmallWoodenBookshelf,
+                ItemID.SnowDayBookshelf,
             }
         },
         {
             DecorationCategory.HutchesLockers, new List<int>()
             {
+                ItemID.ChessWardrobe,
+                ItemID.PetWardrobe,
+                ItemID.CelestialWardrobe,
                 ItemID.GothicHutch,
                 ItemID.ClassicHutch,
                 ItemID.BlueLockers,
                 ItemID.GreenElvenHutch,
+                ItemID.StarlightWardrobe,
+                ItemID.ToyBlockWardrobe,
+                ItemID.TistheSeasonWardrobe,
+                ItemID.DeepSeaWardrobe,
             }
         },       
         {
@@ -369,6 +291,7 @@ public static class DecorationCategorization
         {
             DecorationCategory.Plants, new List<int>()
             {
+                ItemID.SmallSeaweed,
                 ItemID.YoungBonsai,
                 ItemID.GlowingFlowerLights,
                 ItemID.LuminesentPumpkin,
@@ -428,6 +351,9 @@ public static class DecorationCategorization
         {
             DecorationCategory.WallDisplays, new List<int>()
             {
+                ItemID.ToyWatchClock,
+                ItemID.PopSensationAcousticFoam,
+                ItemID.DeepsTreasureMap,
                 ItemID.NeonSign,
                 ItemID.MiyeonsAmateurPainting,
                 ItemID.ElvenLoreTapestry,
@@ -500,11 +426,41 @@ public static class DecorationCategorization
                 ItemID.CombatTrophy,
                 ItemID.ExplorersTrophy,
                 ItemID.FishingTrophy,
+                ItemID.BrinestoneStatue,
             }
         },
         {
             DecorationCategory.MiscDecor, new List<int>()
             {
+                ItemID.ReindeerDecoration,
+                ItemID.BlackRook,
+                ItemID.WhiteRook,
+                ItemID.BlackBishop,
+                ItemID.WhiteBishop,
+                ItemID.BlackKnight,
+                ItemID.WhiteKnight,
+                ItemID.BlackPawn,
+                ItemID.WhitePawn,
+                ItemID.BlackQueen,
+                ItemID.WhiteQueen,
+                ItemID.BlackKing,
+                ItemID.WhiteKing,
+                ItemID.Soundotronic800,
+                ItemID.CatScratcher,
+                ItemID.AirHockeyTable,
+                ItemID.FoosballTable,
+                ItemID.PinballTable,
+                ItemID.BloomandDoomRecordPlayer,
+                ItemID.GildedMoonGlobe,
+                ItemID.LargeMoonGlobe,
+                ItemID.FlyingReindeerDecoration,
+                ItemID.GiantTistheSeasonSnowglobe,
+                ItemID.PopSensationMicrophone,
+                ItemID.PopSensationCostumeCart,
+                ItemID.PopSensationKeyboard,
+                ItemID.PopSensationBasicSpeaker,
+                ItemID.PopSensationSmallSpeaker,
+                ItemID.PopSensationLargeSpeaker,
                 ItemID.GiantGoldenTimeTurner,
                 ItemID.GoldenSandCastle,
                 ItemID.GoldenGlassStatue,
@@ -742,6 +698,25 @@ public static class DecorationCategorization
         {
             DecorationCategory.Lighting, new List<int>()
             {
+                ItemID.GreenLavaLamp,
+                ItemID.BlueLavaLamp,
+                ItemID.RedLavaLamp,
+                ItemID.OrangeLavaLamp,
+                ItemID.PurpleLavaLamp,
+                ItemID.ChessLamp,
+                ItemID.BirdhouseLamp,
+                ItemID.MailboxLamp,
+                ItemID.BloomandDoomLamp,
+                ItemID.CelestialNightLight,
+                ItemID.JellyfishLamp,
+                ItemID.TistheSeasonWreathLamp,
+                ItemID.SnowDayLamp,
+                ItemID.StarlightLamp,
+                ItemID.FlashlightLamp,
+                ItemID.StarlightNightlight,
+                ItemID.PopSensationNeonLights,
+                ItemID.PopSensationStageLight,
+                ItemID.DeeplightLamp,
                 ItemID.BirthdayLamp,
                 ItemID.ConjuredBrazier,
                 ItemID.GlowingFlowerLights,
@@ -853,6 +828,8 @@ public static class DecorationCategorization
         {
             DecorationCategory.Plushies, new List<int>()
             {
+                ItemID.ToyBearPlushie,
+                ItemID.ToyDuckPlushie,
                 ItemID.BabyPandaPlushie,
                 ItemID.BatPlushie,
                 ItemID.BeePlushie,
@@ -925,11 +902,28 @@ public static class DecorationCategorization
                 ItemID.DonutSlime,
                 ItemID.YearoftheDogPlush,
                 ItemID.YearofthePigPlush,
+                ItemID.CrabPlushie,
+                ItemID.DeepSeaOctopusPlushie,
+                ItemID.SeaBunnyPlushie,
             }
         },                   
         {
             DecorationCategory.Rugs, new List<int>()
             {
+                ItemID.ChessBoardRug,
+                ItemID.ChessRug,
+                ItemID.CatTreatRug,
+                ItemID.DogBiscuitRug,
+                ItemID.BloomandDoomRug,
+                ItemID.GildedCelestialRug,
+                ItemID.StarfishRug,
+                ItemID.SandDollarRug,
+                ItemID.TistheSeasonRug,
+                ItemID.SnowDayRug,
+                ItemID.PuzzlePieceRug,
+                ItemID.PaddleballRug,
+                ItemID.StarlightRug,
+                ItemID.PopSensationRug,
                 ItemID.ConfettiRug,
                 ItemID.SpiritPetalRug,
                 ItemID.CyberpopRug,
@@ -1028,6 +1022,28 @@ public static class DecorationCategorization
         {
             DecorationCategory.Seating, new List<int>()
             {
+                ItemID.ChessChair,
+                ItemID.ChessCouch,
+                ItemID.PetChair,
+                ItemID.PetCouch,
+                ItemID.BloomandDoomChair,
+                ItemID.BloomandDoomCouch,
+                ItemID.CelestialCouch,
+                ItemID.CelestialChair,
+                ItemID.DeepSeaClamChair,
+                ItemID.TistheSeasonCouch,
+                ItemID.TistheSeasonWoodenChair,
+                ItemID.SnowDayCouch,
+                ItemID.SnowDayChair,
+                ItemID.ToyBearCouch,
+                ItemID.ToyBearChair,
+                ItemID.ToyBlockChair,
+                ItemID.StarlightChair,
+                ItemID.StarlightTable,
+                ItemID.StarlightCouch,
+                ItemID.PopSensationStarChair,
+                ItemID.PopSensationCastChair,
+                ItemID.PopSensationLCouch,
                 ItemID.BirthdayCouch,
                 ItemID.BirthdayChair,
                 ItemID.NatureChair,
@@ -1155,6 +1171,8 @@ public static class DecorationCategorization
         {
             DecorationCategory.Storage, new List<int>()
             {
+                ItemID.BloomandDoomWardrobe,
+                ItemID.StarlightStorageChest,
                 ItemID.BirthdayWardrobe,
                 ItemID.SpiritPetalWardrobe,
                 ItemID.CyberpopStudentChest,
@@ -1196,6 +1214,26 @@ public static class DecorationCategorization
         { 
             DecorationCategory.Surfaces, new List<int>()
             {
+                ItemID.ChessTable,
+                ItemID.ChessEndTable,
+                ItemID.PetTable,
+                ItemID.PetEndTable,
+                ItemID.BloomandDoomEndTable,
+                ItemID.BloomandDoomTable,
+                ItemID.CelestialCauldronEndTable,
+                ItemID.GildedCelestialTable,
+                ItemID.DeepSeaTable,
+                ItemID.DeepSeaNightstand,
+                ItemID.TistheSeasonJollyEndTable,
+                ItemID.FancyTistheSeasonWoodenTable,
+                ItemID.TistheSeasonHollyEndTable,
+                ItemID.SnowDayTable,
+                ItemID.SnowDayEndTable,
+                ItemID.ToyBlockTable,
+                ItemID.ToyCubeTable,
+                ItemID.StarlightEndTable,
+                ItemID.PopSensationDressingRoomTable,
+                ItemID.PopSensationTable,
                 ItemID.BirthdayTable,
                 ItemID.SpiritPetalEndTable,
                 ItemID.SpiritPetalTable,
@@ -1300,6 +1338,15 @@ public static class DecorationCategorization
         {
             DecorationCategory.Clutter, new List<int>()
             {
+                ItemID.ZariasEmptyBucket,
+                ItemID.BubblePanic,
+                ItemID.Skeedat,
+                ItemID.Rombopoly,
+                ItemID.MarbleChessboard,
+                ItemID.FullPetDish,
+                ItemID.EmptyPetDish,
+                ItemID.HiddenPearlClam,
+                ItemID.CoralCompass,
                 ItemID.PinataTeal,
                 ItemID.PinataStriped,
                 ItemID.PinataOrange,
@@ -1562,6 +1609,8 @@ public static class DecorationCategorization
         {
             DecorationCategory.FloorTiles, new List<int>()
             {
+                ItemID.OceanBrickFloorTile,
+                ItemID.BrineStonesFloorTile,
                 ItemID.StoneFloorTile,
                 ItemID.WorkshopFloorTile,
                 ItemID.FloorTile1,
@@ -1649,6 +1698,7 @@ public static class DecorationCategorization
                 ItemID.ElvenJuicer,
                 ItemID.CraftingTableOld,
                 ItemID.BeeBox,
+                ItemID.NurseryCraftingTable,
             }
         },
         {
@@ -1801,70 +1851,6 @@ public static class DecorationCategorization
                 ItemID.SilkWyrm,
                 ItemID.Mimic,
                 ItemID.Ooey,
-                ItemID.Tilia,
-                ItemID.Axie,
-                ItemID.Myrtle,
-                ItemID.Gus,
-                ItemID.Sizzle,
-                ItemID.Bartleby,
-                ItemID.Revi,
-                ItemID.Pix,
-                ItemID.Kelsie,
-                ItemID.Pud,
-                ItemID.Wixxy,
-                ItemID.Graggle,
-                ItemID.Gayle,
-                ItemID.Darter,
-                ItemID.Grubby,
-                ItemID.Spirix,
-                ItemID.RedShiver,
-                ItemID.OrangeShiver,
-                ItemID.YellowShiver,
-                ItemID.GreenShiver,
-                ItemID.BlueShiver,
-                ItemID.PurpleShiver,
-                ItemID.PinkShiver,
-                ItemID.Octavius,
-                ItemID.OrangeBunny,
-                ItemID.GreyBunny,
-                ItemID.BrownBunny,
-                ItemID.BlackBunny,
-                ItemID.SpottedBunny,
-                ItemID.RedUnicorn,
-                ItemID.OrangeUnicorn,
-                ItemID.YellowUnicorn,
-                ItemID.GreenUnicorn,
-                ItemID.BlueUnicorn,
-                ItemID.PurpleUnicorn,
-                ItemID.PinkUnicorn,
-                ItemID.FlamingUnicorn,
-                ItemID.WhiteBuppy,
-                ItemID.BlackBuppy,
-                ItemID.SpottedBuppy,
-                ItemID.BrownBuppy,
-                ItemID.YellowSmolder,
-                ItemID.PurpleSmolder,
-                ItemID.BlackSmolder,
-                ItemID.WhiteSmolder,
-                ItemID.BlueSmolder,
-                ItemID.GreenSmolder,
-                ItemID.TealBubbles,
-                ItemID.BlueBubbles,
-                ItemID.PinkBubbles,
-                ItemID.FlameBubbles,
-                ItemID.RedKit,
-                ItemID.OrangeKit,
-                ItemID.YellowKit,
-                ItemID.GreenKit,
-                ItemID.PurpleKit,
-                ItemID.PinkKit,
-                ItemID.BlackKit,
-                ItemID.OrangePercy,
-                ItemID.GreenPercy,
-                ItemID.BluePercy,
-                ItemID.PurplePercy,
-                ItemID.PinkPercy,
-                ItemID.BlackPercy,
             }
         },        
         {
@@ -2022,85 +2008,6 @@ public static class DecorationCategorization
                 ItemID.BeetSeeds,
                 ItemID.PurpleEggplantSeeds,
                 ItemID.BrrNanaSeeds,
-            }
-        },
-        {
-            DecorationCategory.DLC, new List<int>()
-            {
-                ItemID.PirateAnchor,
-                ItemID.PirateBed,
-                ItemID.PirateCannon,
-                ItemID.PirateChair,
-                ItemID.PirateChest,
-                ItemID.PirateHammock,
-                ItemID.PirateTable,
-                ItemID.PirateTreasureMap,
-                ItemID.PirateWardrobe,
-                ItemID.PirateWoodPost,
-                ItemID.SeasideBed,
-                ItemID.SeasideChair,
-                ItemID.SeasideChest,
-                ItemID.SeasideEndTable,
-                ItemID.SeasideLamp,
-                ItemID.SeasideTable,
-                ItemID.SeasideWardrobe,
-                ItemID.BlueSeasideShellRug,
-                ItemID.BlueSeasideStarfishRug,
-                ItemID.PinkSeasideShellRug,
-                ItemID.PinkSeasideStarfishRug,
-                ItemID.MushroomBed,
-                ItemID.MushroomBookshelf,
-                ItemID.MushroomCarpet,
-                ItemID.MushroomCoatRack,
-                ItemID.MushroomTable,
-                ItemID.MushroomEndTable,
-                ItemID.RedMushroomDecoration,
-                ItemID.LightBrownMushroomDecoration,
-                ItemID.CyberpopThrone,
-                ItemID.CyberpopBicycle,
-                ItemID.CyberpopHoverBike,
-                ItemID.CyberpopMotorcycle,
-                ItemID.CyberpopBed,
-                ItemID.CyberpopCouch,
-                ItemID.CyberpopStudentChest,
-                ItemID.CyberpopWardrobe,
-                ItemID.CyberpopArcCapacitor,
-                ItemID.CyberpopRecordPlayer,
-                ItemID.CyberpopStudentChair,
-                ItemID.CyberpopGlobe,
-                ItemID.CyberpopDesk,
-                ItemID.CyberpopTable,
-                ItemID.CyberpopRug,
-                ItemID.RocknRollCouch,
-                ItemID.RocknRollAmp,
-                ItemID.RocknRollBlackGuitar,
-                ItemID.RocknRollRedGuitar,
-                ItemID.RocknRollWardrobe,
-                ItemID.RocknRollLamp,
-                ItemID.RocknRollGoldRecordAward,
-                ItemID.RocknRollBed,
-                ItemID.RocknRollTable,
-                ItemID.RocknRollEndTable,
-                ItemID.RocknRollBlackRug,
-                ItemID.RocknRollRedRug,
-                ItemID.SpiritOrb,
-                ItemID.SpiritPetalLamp,
-                ItemID.SpiritPetalWardrobe,
-                ItemID.SpiritPetalCouch,
-                ItemID.SpiritPetalChair,
-                ItemID.SpiritPetalEndTable,
-                ItemID.SpiritPetalTable,
-                ItemID.SpiritPetalRug,
-                ItemID.SpiritPetalBed,
-                ItemID.SpookyRug,
-                ItemID.SpookyBed,
-                ItemID.SpookyWardrobe,
-                ItemID.SpookyCouch,
-                ItemID.SpookyChair,
-                ItemID.SpookyEndTable,
-                ItemID.SpookyTable,
-                ItemID.SpookyPumpkinCauldron,
-                ItemID.SpookyStackofPumpkins,
             }
         },
         {
@@ -2270,6 +2177,30 @@ public static class DecorationCategorization
                 ItemID.PinkPercy,
                 ItemID.BlackPercy,
                 ItemID.Willo,
+                ItemID.Octavius,
+                ItemID.Snoodles,
+                ItemID.Roary,
+                ItemID.Leo,
+                ItemID.Newton,
+                ItemID.Phillip,
+                ItemID.Celesti,
+                ItemID.Twinkle,
+                ItemID.FriendBot1000,
+                ItemID.Grimble,
+                ItemID.JoeSnow,
+                ItemID.Mistletoe,
+                ItemID.Sugardrop,
+                ItemID.Harmony,
+                ItemID.Gumbo,
+                ItemID.Angie,
+                ItemID.Charles,
+                ItemID.Jiggles,
+                ItemID.Apollo,
+                ItemID.BeezyBuzz,
+                ItemID.Bingle,
+                ItemID.Fido,
+                ItemID.Qt,
+                ItemID.Leafel,
             }
         },
     };

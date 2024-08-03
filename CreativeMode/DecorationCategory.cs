@@ -40,4 +40,5 @@ public enum DecorationCategory
     Buildings = 35,
     Seeds = 36,
     DLC = 37,
+    CustomItems = 38,
 }

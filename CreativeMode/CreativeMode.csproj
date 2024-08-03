@@ -1,14 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>1.3.1</Version>
+    <Version>1.4.0</Version>
     <PluginReleasePath>CreativeMode</PluginReleasePath>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="QFSW.QC">
-      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sun Haven\Sun Haven_Data\Managed\QFSW.QC.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\CustomItems\CustomItems.csproj" Private="false" />
   </ItemGroup>
 
   <Import Project="$(SolutionDir)\private.targets" />
