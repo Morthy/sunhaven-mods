@@ -6,6 +6,7 @@ using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using PSS;
+using UnityEngine;
 using Wish;
 
 namespace CustomItems
@@ -22,18 +23,56 @@ namespace CustomItems
             try
             {
                 Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} v{PluginInfo.PLUGIN_VERSION} is loaded!");
-                this.harmony.PatchAll();
+                harmony.PatchAll();
             }
             catch (Exception e)
             {
                 logger.LogError("{PluginInfo.PLUGIN_GUID} Awake failed: " + e);
             }
         }
-        
-        
+
         [HarmonyPatch]
         class Patches
         {
+            [HarmonyPrefix]
+            [HarmonyPatch(typeof(Player), "SetUseItem")]
+            public static bool PlayerSetUseItem(ref ushort item, ref int index, ref bool fromLocal, ref Player __instance)
+            {
+                if (!CustomItems.HasCustomItemWithID(item))
+                {
+                    return true;
+                }
+                
+                foreach (Component component in __instance.UseItemTransform)
+                    Destroy(component.gameObject);
+
+                __instance._useItem = null;
+
+                var itemData = CustomItems.GetCustomItem(item);
+                var useItem = itemData.useItem;
+
+                if (useItem != null)
+                {
+                    var useItem2 = Instantiate<UseItem>(useItem, __instance.UseItemTransform.position, __instance.transform.rotation, __instance.UseItemTransform);
+                    useItem2.SetPlayer(__instance);
+                    useItem2.SetItemData(itemData);
+                    __instance._useItem = useItem2;
+                }
+                
+                __instance.onLoadedItem?.Invoke();
+                __instance.onLoadedItem = null;
+                
+                __instance.Item = item;
+                __instance.ItemIndex = index;
+                __instance.ItemData = itemData;
+                if (!fromLocal)
+                    return false;
+                
+                __instance.onSetUseItem?.Invoke(item);
+
+                return false;
+            }
+
             [HarmonyPrefix]
             [HarmonyPatch(typeof(Database), "GetCacheCapacity")]
             public static bool DatabaseGetCacheCapacity(ref int __result)
@@ -86,7 +125,17 @@ namespace CustomItems
             {
                 try
                 {
-                    CustomItems.AddItems();
+                    Database.GetData<ItemData>(ItemID.Chest, data =>
+                    {
+                        CustomFurniture.ExampleChest = data;
+                        CustomItems.TryAddItems();
+                    });
+                    
+                    Database.GetData<ItemData>(ItemID.CowPlushie, data =>
+                    {
+                        CustomFurniture.ExampleFurniture = data;
+                        CustomItems.TryAddItems();
+                    });
                 }
                 catch (Exception e)
                 {
@@ -103,14 +152,13 @@ namespace CustomItems
             { 
                try
                {
+                   logger.LogInfo("SaleManager::Awake");
                    CustomItems.AddItemsToShops();
                }
                catch (Exception e)
                {
                    logger.LogError(e);
                }
-
-               //logger.LogInfo(SingletonBehaviour<SaleManager>.Instance.merchantTables.Aggregate("", (current, x) => current + (x.name + "\n")));
             }
             
             [HarmonyPostfix]

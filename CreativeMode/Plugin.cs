@@ -16,7 +16,7 @@ using Tree = Wish.Tree;
 namespace CreativeMode;
 
 [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
-[BepInDependency("CustomItems", "0.2.2")]
+[BepInDependency("CustomItems", "0.4.0")]
 public class Plugin : BaseUnityPlugin
 {
     private readonly Harmony _harmony = new (PluginInfo.PLUGIN_GUID);

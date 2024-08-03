@@ -10,7 +10,6 @@ using Wish;
 using HarmonyLib;
 using JetBrains.Annotations;
 using PSS;
-using Sirenix.Serialization;
 using TinyJson;
 using Object = UnityEngine.Object;
 
@@ -18,6 +17,8 @@ namespace CustomItems;
 
 public class CustomItems
 {
+    public static Action OnCustomItemsAdded;
+    
     private static readonly string[] RequiredItemKeys = 
     {
         "name",
@@ -45,6 +46,14 @@ public class CustomItems
     public static ItemData GetCustomItem(int id)
     {
         return ItemDB[id];
+    }
+
+    public static void TryAddItems()
+    {
+        if (CustomFurniture.ExampleFurniture && CustomFurniture.ExampleChest)
+        {
+            AddItems();
+        }
     }
     
     public static void AddItems()
@@ -94,6 +103,8 @@ public class CustomItems
         
         GetCustomItem(61000).useItem = new GameObject("Scrubber Useable").AddComponent<DecorationScrubber>();
         Object.DontDestroyOnLoad(GetCustomItem(61000).useItem);
+        
+        OnCustomItemsAdded?.Invoke();
     }
 
     public static void AddItemsToShops()
@@ -107,12 +118,12 @@ public class CustomItems
                 if (!table)
                 {
                     Plugin.logger.LogError($"Could not find merchant table with name ${merchantAddition.Key}");
-                    return;
+                    continue;
                 }
                 
                 if (table.startingItems2.Exists(i => i.id == info.id))
                 {
-                    return;
+                    continue;
                 }
                 
                 table.startingItems2.Add(info);
@@ -364,7 +375,7 @@ public class CustomItems
             
             Database.GetData<ItemData>(entry.Key, data =>
             {
-                recipe.output2 = new SerializedItemDataNamedAmount() { id = entry.Key, name = data.name, amount = entry.Value.amount };
+                recipe.output2 = new SerializedItemDataNamedAmount() { id = entry.Key, name = data.name, amount = entry.Value.amount == 0 ? 1 : entry.Value.amount };
             });
 
             recipe.input2 = new List<SerializedItemDataNamedAmount>();
@@ -380,7 +391,7 @@ public class CustomItems
                     
                     foreach (var inputDefinition in entry.Value.inputs)
                     {
-                        recipe.input2.Add(new SerializedItemDataNamedAmount() { id = inputDefinition.id, name = tmpItems[inputDefinition.id].name, amount = inputDefinition.amount });
+                        recipe.input2.Add(new SerializedItemDataNamedAmount() { id = inputDefinition.id, name = tmpItems[inputDefinition.id].name, amount = inputDefinition.amount == 0 ? 1 : inputDefinition.amount });
                     }
                 });
             }
