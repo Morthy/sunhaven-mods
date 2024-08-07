@@ -10,6 +10,17 @@ namespace WhatFishCanICatch;
 public class FishUI : CustomUI
 {
     private bool _isCreated = false;
+    private float _lastHide;
+
+    public void OnDisable()
+    {
+        _lastHide = Time.time;
+    }
+
+    public bool DidJustDisable()
+    {
+        return Time.time - _lastHide < 0.25;
+    }
 
     public void Create()
     {

@@ -114,7 +114,7 @@ namespace WhatFishCanICatch
             [HarmonyPatch(typeof(UseItem), "Use2")]
             private static bool FishingRodUse2(UseItem __instance)
             {
-                if (__instance is FishingRod)
+                if (__instance is FishingRod && !_fishUI.DidJustDisable())
                 {
                     ShowFish();
                 }

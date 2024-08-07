@@ -42,7 +42,7 @@ public class CraftingUI : CustomUI
     
     public void Populate(List<(ItemData, string)> data, string title)
     {
-        _titleText.text = "Recipes using " + title;
+        _titleText.text = title;
         
         foreach (var item in data)
         {
@@ -78,7 +78,7 @@ public class CraftingUI : CustomUI
         titleText.transform.localRotation = Quaternion.identity;
         titleText.rectTransform.sizeDelta = new Vector2(90, 25);
         titleText.alignment = TextAlignmentOptions.Left;
-        titleText.fontSize = 15f;
+        titleText.fontSize = item.Name.Length <= 20 ? 15f : 10f;
         titleText.enableWordWrapping = false;
         titleText.text = item.FormattedName;
 

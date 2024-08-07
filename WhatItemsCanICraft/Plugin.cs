@@ -19,10 +19,13 @@ namespace WhatItemsCanICraft
         public static ManualLogSource logger;
         private static CraftingUI _craftingUI;
         private static List<RecipeList> _recipeLists = new();
+        private static Dictionary<string, List<Recipe>> _recipes = new ();
         private static ConfigEntry<string> _modifierKey;
 
+        // "Old" items: 9351 9352  9353 9350 9355
+        // Lynn anvil: 9357
         private static int[] _craftingTables = {
-            9351, 9353, 9356, 9359, 10684, 10689, 10703, 9350, 9352, 9355, 9357, 9354, 10317, 10465, 10464, 10537, 10574, 10687, 10686, 10685, 10690, 10683, 10688, 10691, 10702, 10704, 10705, 10707, 10700, 10708, 10701, 10706, 10709, 10711, 10710, 10721,
+            9356, 9359, 10684, 10689, 10703, 9354, 10317, 10465, 10464, 10537, 10574, 10687, 10686, 10685, 10690, 10683, 10688, 10691, 10702, 10704, 10705, 10707, 10700, 10708, 10701, 10706, 10709, 10711, 10710, 10721,
             10725, 10716, 10717, 10724, 10715, 10713, 10712, 10718, 10714, 10723, 10720, 10726, 10722, 10727, 10728, 10738, 10864, 10867, 10868, 10866, 10890, 10891, 10892, 10923
         };
         
@@ -68,7 +71,7 @@ namespace WhatItemsCanICraft
         
         public static IEnumerator LoadAllRecipes(Action onDone)
         {
-            if (_recipeLists.Count > 0)
+            if (_recipes.Count > 0)
             {
                 onDone();
                 yield break;
@@ -83,17 +86,17 @@ namespace WhatItemsCanICraft
                 Database.GetData<ItemData>(id, data =>
                 {
                     var table = ((Placeable)data.useItem)._decoration as CraftingTable;
-                    var recipeList = Traverse.Create(table).Field("recipeList").GetValue<RecipeList>();
+                    var recipes = table._craftingRecipes;
+                    var name = data.name;
 
-                    if (recipeList)
+                    if (recipes.Count == 0 && table.recipeList)
                     {
-                        _recipeLists.Add(recipeList);
-                        logger.LogDebug($"Added {recipeList.craftingRecipes.Count} recipes");
+                        recipes = table.recipeList.craftingRecipes;
                     }
-                    else
-                    {
-                        logger.LogDebug($"Added 0 recipes");
-                    }
+                    
+                    _recipes[name] = recipes;
+                    
+                    logger.LogDebug($"Added {recipes.Count} recipes for {name}");
 
                     done++;
                 });
@@ -114,14 +117,14 @@ namespace WhatItemsCanICraft
             var results = new List<(ItemData, string)>();
             var count = 0;
             
-            foreach (var rl in _recipeLists)
+            foreach (var recipeList in _recipes)
             {
-                foreach (var r in rl.craftingRecipes.Where(r => r.input2.Any(i => i.id == item.id)))
+                foreach (var r in recipeList.Value.Where(r => r.input2.Any(i => i.id == item.id)))
                 {
                     count++;
                     Database.GetData<ItemData>(r.output2.id, data =>
                     {
-                        results.Add((data, rl.name));
+                        results.Add((data, recipeList.Key));
                     });
                 }
             }
@@ -146,7 +149,7 @@ namespace WhatItemsCanICraft
                 {
                     if (!Input.GetKey((KeyCode)Enum.Parse(typeof(KeyCode),_modifierKey.Value)))
                         return true;
-                    
+
                     /*
                     Player.Instance.StartCoroutine(DetermineCraftingTables((ids) =>
                     {
@@ -160,6 +163,11 @@ namespace WhatItemsCanICraft
                     {
                         Database.GetData<ItemData>(__instance.item.ID(), itemData =>
                         {
+                            if (itemData.useItem && itemData.useItem.GetType() == typeof(FishingRod))
+                            {
+                                return;
+                            }
+                            
                             Player.Instance.StartCoroutine(GetRecipesUsingItem(itemData, craftables =>
                             {
                                 if (craftables.Count > 0)
