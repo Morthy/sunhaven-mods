@@ -83,14 +83,14 @@ public class ItemUI : CustomUI
         {
             _page--;
             Populate();
-            AudioManager.Instance.PlayAudio(Prefabs.Instance.changeTabsSound, 0.5f);
+            AudioManager.Instance.PlayAudioImmediate(Prefabs.Instance.changeTabsSound, 0.5f);
         });
         _nextButton = CreateButton(bg.transform, new Vector3(126, -197, 0), new Vector2(75, 18), "Next page");
         _nextButton.onClick.AddListener(delegate
         {
             _page++;
             Populate();
-            AudioManager.Instance.PlayAudio(Prefabs.Instance.changeTabsSound, 0.5f);
+            AudioManager.Instance.PlayAudioImmediate(Prefabs.Instance.changeTabsSound, 0.5f);
         });
         
         ScrollRect = CreateScrollView(

@@ -301,7 +301,7 @@ public class Plugin : BaseUnityPlugin
             case GoldType.Gold:
                 if (GameSave.Coins < cost)
                 {
-                    AudioManager.Instance.PlayAudio(SingletonBehaviour<Prefabs>.Instance.errorSound, 0.5f);
+                    AudioManager.Instance.PlayAudioImmediate(SingletonBehaviour<Prefabs>.Instance.errorSound, 0.5f);
                     return false;
                 }
                 Player.Instance.AddMoneyAndRegisterSource(-cost, 60101, 1, MoneySource.Exploration, showNotification: true);
@@ -309,7 +309,7 @@ public class Plugin : BaseUnityPlugin
             case GoldType.Tickets:
                 if (GameSave.Tickets < cost)
                 {
-                    AudioManager.Instance.PlayAudio(SingletonBehaviour<Prefabs>.Instance.errorSound, 0.5f);
+                    AudioManager.Instance.PlayAudioImmediate(SingletonBehaviour<Prefabs>.Instance.errorSound, 0.5f);
                     return false;
                 }
                 Player.Instance.AddTicketsAndRegisterSource(-cost, 60002, 1, MoneySource.Exploration, showNotification: true);
@@ -317,7 +317,7 @@ public class Plugin : BaseUnityPlugin
             case GoldType.Orbs:
                 if (GameSave.Orbs < cost)
                 {
-                    AudioManager.Instance.PlayAudio(SingletonBehaviour<Prefabs>.Instance.errorSound, 0.5f);
+                    AudioManager.Instance.PlayAudioImmediate(SingletonBehaviour<Prefabs>.Instance.errorSound, 0.5f);
                     return false;
                 }
                 Player.Instance.AddOrbsAndRegisterSource(-cost, 60001, 1, MoneySource.Exploration, showNotification: true);
@@ -339,7 +339,7 @@ public class Plugin : BaseUnityPlugin
 
         Rerolls[key]++;
         SetItemFromReroll(saleStand);
-        AudioManager.Instance.PlayAudio(SingletonBehaviour<Prefabs>.Instance.placeDecorationSound, 0.75f);
+        AudioManager.Instance.PlayAudioImmediate(SingletonBehaviour<Prefabs>.Instance.placeDecorationSound, 0.75f);
     }
     
     private static void DoReroll(MannequinTable saleStand)
@@ -354,7 +354,7 @@ public class Plugin : BaseUnityPlugin
 
         Rerolls[key]++;
         SetItemFromReroll(saleStand);
-        AudioManager.Instance.PlayAudio(SingletonBehaviour<Prefabs>.Instance.placeDecorationSound, 0.75f);
+        AudioManager.Instance.PlayAudioImmediate(SingletonBehaviour<Prefabs>.Instance.placeDecorationSound, 0.75f);
     }
 
     private static void DoReroll(Entity saleStand)

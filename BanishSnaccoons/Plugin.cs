@@ -68,7 +68,7 @@ namespace BanishSnaccoons
                     if (__instance.bundleType == BundleType.Snaccoon)
                     {
                         __instance.UpdateFullness(true);
-                        AudioManager.Instance.PlayAudio(SingletonBehaviour<Prefabs>.Instance.snaccoonCrunch, 0.35f);
+                        AudioManager.Instance.PlayAudioImmediate(SingletonBehaviour<Prefabs>.Instance.snaccoonCrunch, 0.35f);
                         return false;
                     }
                 }
