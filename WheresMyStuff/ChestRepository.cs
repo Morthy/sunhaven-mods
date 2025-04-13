@@ -74,7 +74,7 @@ public class ChestRepository
 
     public void UpdateChestLocations(int sceneId, bool withItems = true)
     {
-        if (!SingletonBehaviour<GameSave>.Instance.CurrentWorld.decorations.ContainsKey((short)sceneId))
+        if (!SingletonBehaviour<GameSave>.Instance.CurrentWorld.Decorations.ContainsKey((short)sceneId))
         {
             return;
         }
@@ -84,7 +84,7 @@ public class ChestRepository
             _chestLocations[sceneId] = new List<ChestLocation>();
         }
 
-        var decorations = GameSave.Instance.CurrentWorld.decorations[(short)sceneId];
+        var decorations = GameSave.Instance.CurrentWorld.Decorations[(short)sceneId];
             
         foreach (var decoration in decorations)
         {

@@ -6,7 +6,7 @@ public class SpriteUtil
 {
     private static Texture2D CreateTexture(byte[] data)
     {
-        var texture = new Texture2D(1, 1);
+        var texture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
         texture.LoadImage(data);
         texture.filterMode = FilterMode.Point;
         texture.wrapMode = TextureWrapMode.Clamp;

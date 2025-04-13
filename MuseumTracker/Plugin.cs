@@ -629,12 +629,12 @@ namespace MuseumTracker
 
         private static void HandleSceneDecorations(int sceneId)
         {
-            if (!SingletonBehaviour<GameSave>.Instance.CurrentWorld.decorations.ContainsKey((short)sceneId))
+            if (!SingletonBehaviour<GameSave>.Instance.CurrentWorld.Decorations.ContainsKey((short)sceneId))
             {
                 return;
             }
             
-            var decorations = GameSave.Instance.CurrentWorld.decorations[(short)sceneId];
+            var decorations = GameSave.Instance.CurrentWorld.Decorations[(short)sceneId];
             
             foreach (var decoration in decorations)
             {

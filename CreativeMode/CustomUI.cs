@@ -207,6 +207,9 @@ public class CustomUI : MonoBehaviour
         var btn = Instantiate(settings.transform.Find("ExitButton").GetComponent<Button>(), parent);
         var gameObject = btn.gameObject;
         gameObject.name = "Modded button";
+        
+        Destroy(gameObject.GetComponent<Popup>());
+        
         btn.onClick = new Button.ButtonClickedEvent();
         ((RectTransform)gameObject.transform).sizeDelta = sizeDelta;
         gameObject.transform.localPosition = position;

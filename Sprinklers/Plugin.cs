@@ -89,9 +89,10 @@ public class Plugin : BaseUnityPlugin
                 return;
             }
             
-            foreach (KeyValuePair<short, Dictionary<KeyTuple<ushort, ushort, sbyte>, DecorationPositionData>> decoration in SingletonBehaviour<GameSave>.Instance.CurrentWorld.Decorations)
+            
+            foreach (var decoration in SingletonBehaviour<GameSave>.Instance.CurrentWorld.Decorations)
             {
-                foreach (KeyValuePair<KeyTuple<ushort, ushort, sbyte>, DecorationPositionData> keyValuePair in decoration.Value)
+                foreach (var keyValuePair in decoration.Value)
                 {
                     DecorationPositionData decorationPositionData = keyValuePair.Value;
                     int id = keyValuePair.Value.id;

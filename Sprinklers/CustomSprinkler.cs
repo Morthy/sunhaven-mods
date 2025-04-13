@@ -29,7 +29,8 @@ public class CustomSprinkler : Decoration
         {
           Vector2Int vector2Int = new Vector2Int(decorationData.x + index1 * 6, decorationData.y + index2 * 6);
           DecorationPositionData decorationPositionData;
-          if (SingletonBehaviour<GameSave>.Instance.CurrentWorld.Decorations[decorationData.sceneID].TryGetValue(new KeyTuple<ushort, ushort, sbyte>((ushort) vector2Int.x, (ushort) vector2Int.y, decorationData.z), out decorationPositionData))
+          
+          if (SingletonBehaviour<GameSave>.Instance.CurrentWorld.Decorations[decorationData.sceneID].TryGetValue(new DecorationKey((ushort)vector2Int.x, (ushort)vector2Int.y, decorationData.z), out decorationPositionData))
           {
             if (Database.ValidID(decorationPositionData.id))
             {

@@ -101,7 +101,7 @@ public class Plugin : BaseUnityPlugin
     private static Sprite GetHDSprite(string npcName, string season, int index = 0)
     {
         var textureKey = npcName + "_" + season;
-        var numSprites = season.Equals("Wedding") ? 1f : 6f;
+        var numSprites = season.Equals("Wedding") || season.Equals("Halloween") ? 1f : 6f;
 
         logger.LogInfo($"GetHDSprite {npcName} {season} {index}");
         
@@ -127,7 +127,7 @@ public class Plugin : BaseUnityPlugin
     class Patches
     {
         [HarmonyPrefix]
-        [HarmonyPatch(typeof(DialogueController), "SetDialogueBustVisualsOptimized", typeof(Vector2), typeof(string), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool))]
+        [HarmonyPatch(typeof(DialogueController), "SetDialogueBustVisualsOptimized", typeof(Vector2), typeof(string), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool))]
         public static bool SetDialogueBustVisualsOptimized(ref DialogueController __instance, 
             ref Image ____bust,
             Vector2 offset,
@@ -136,7 +136,8 @@ public class Plugin : BaseUnityPlugin
             bool isMarriageBust = false,
             bool isSwimsuitBust = false,
             bool hideName = false,
-            bool isRefreshBust = true)
+            bool isRefreshBust = true,
+            bool isHalloweenBust = false)
         {
             try
             {
@@ -152,7 +153,7 @@ public class Plugin : BaseUnityPlugin
 
                 if (Portraits.ContainsKey(key))
                 {
-                    __instance.SetDialogueBustVisualsOptimized(name, small, isMarriageBust, isSwimsuitBust, hideName, isRefreshBust);
+                    __instance.SetDialogueBustVisualsOptimized(name, small, isMarriageBust, isSwimsuitBust, hideName, isRefreshBust, isHalloweenBust);
                     var config = GetPortraitConfig(key);
                     ____bust.GetComponent<RectTransform>().anchoredPosition = new Vector2(512f + config.offsetX, 0.0f + config.offsetY);
                     return false;
@@ -168,7 +169,7 @@ public class Plugin : BaseUnityPlugin
         
         [HarmonyPrefix]
         [HarmonyPatch(typeof(DialogueController), "LoadBust")]
-        public static bool LoadBust(bool isMarriageBust, bool isSwimsuitBust, ref string ___npcName, ref Image ____bust)
+        public static bool LoadBust(bool isMarriageBust, bool isSwimsuitBust, bool isHalloweenBust, ref string ___npcName, ref Image ____bust)
         {
             try
             {
@@ -181,6 +182,10 @@ public class Plugin : BaseUnityPlugin
                 else if (isSwimsuitBust)
                 {
                     ourSprite = GetHDSprite(___npcName, "Swimsuit");
+                }
+                else if (isHalloweenBust)
+                {
+                    ourSprite = GetHDSprite(___npcName, "Halloween");
                 }
                 else
                 {
