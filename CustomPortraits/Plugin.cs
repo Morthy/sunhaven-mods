@@ -127,7 +127,7 @@ public class Plugin : BaseUnityPlugin
     class Patches
     {
         [HarmonyPrefix]
-        [HarmonyPatch(typeof(DialogueController), "SetDialogueBustVisualsOptimized", typeof(Vector2), typeof(string), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool))]
+        [HarmonyPatch(typeof(DialogueController), "SetDialogueBustVisualsOptimized", typeof(Vector2), typeof(string), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool))]
         public static bool SetDialogueBustVisualsOptimized(ref DialogueController __instance, 
             ref Image ____bust,
             Vector2 offset,
