@@ -11,23 +11,5 @@ public class DecorationCatalogue : UseItem
         var itemUI = Plugin.ItemUI.gameObject;
         UIHandler.Instance.OpenUI(itemUI, itemUI.transform.parent);
         Plugin.ItemUI.Opened();
-        /*
-
-        if (ItemHandler.IsLoading) return;
-
-        if (ItemHandler.IsLoaded)
-        {
-            var itemUI = Plugin.ItemUI.gameObject;
-            UIHandler.Instance.OpenUI(itemUI, itemUI.transform.parent);
-            Plugin.ItemUI.Opened();
-            return;
-        }
-        
-        StartCoroutine(ItemHandler.LoadAllItems(() =>
-        {
-            var itemUI = Plugin.ItemUI.gameObject;
-            UIHandler.Instance.OpenUI(itemUI, itemUI.transform.parent);
-            Plugin.ItemUI.Opened();
-        }));*/
     }
 }

@@ -222,7 +222,7 @@ public class CustomUI : MonoBehaviour
 
     private static Texture2D CreateTexture(string data)
     {
-        var texture = new Texture2D(1, 1);
+        var texture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
         texture.LoadImage(Convert.FromBase64String(data));
         texture.filterMode = FilterMode.Point;
         texture.wrapMode = TextureWrapMode.Clamp;
